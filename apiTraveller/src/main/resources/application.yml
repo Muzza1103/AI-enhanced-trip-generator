@@ -1,0 +1,21 @@
+server:
+  port: 9000
+
+spring:
+  datasource:
+    password: PasswordUserL3G1
+    url: jdbc:mysql://localhost:3306/bdd_apitraveller
+    username: User
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    show-sql: true
+
+openai:
+  api:
+    key: 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
+    url: https://api.openai.com/v1/chat/completions
+    model: gpt-3.5-turbo-0125

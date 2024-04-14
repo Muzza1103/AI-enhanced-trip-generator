@@ -1,0 +1,24 @@
+.homepage-container {
+    background-image: url('FujiFlou.jpg'); /* Chemin relatif à la racine du site */
+    background-size: cover; /* Afficher l'image entière */
+    background-position: center; /* Centrer l'image */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+
+
+
+.homepage-container img {
+    border-radius: 70%;
+    width: 230px;
+    height: 230px;
+    object-fit: cover;
+}
+
+.homepage-container button {
+    margin-top: 20px;
+}
