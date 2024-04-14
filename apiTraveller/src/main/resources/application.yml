@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    password: PasswordUserL3G1
-    url: jdbc:mysql://localhost:3306/bdd_apitraveller
-    username: User
+    password: //Your Password
+    url: jdbc:mysql://localhost:3306/db_name
+    username: //Your DB username
   jpa:
     hibernate:
       ddl-auto: update
