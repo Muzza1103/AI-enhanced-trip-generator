@@ -1,6 +1,5 @@
 package com.l3g1.apitraveller.model;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 import lombok.*;
 
@@ -14,22 +13,25 @@ public class Survey {
 	private Landscape landscape; // Preferred landscape
 	private Temperature temperature; // Preferred temperature
 	private List<ActivityType> activityType; // Preferred activity types
-}
-	/*** Exemple of Survey
-	 {
-	 "countryUtil" : "France",
-	 "localisation" : "LOCAL",
-	 "climate" : "TEMPERATE",
-	 "landscape":"URBAN",
-	 "temperature":"TEMPERATE",
-	 "activityType":{"CULTURAL"},
-	 }
-	 * {,
-	 * "localisation" : "LOCAL",
-	 *  "climate" : "TEMPERATE",
-	 *  "landscape":"URBAN",
-	 *  "temperature":"TEMPERATE",
-	 *  "activityType":{"CULTURAL"},
-	 * }
-	 */
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof Survey)) return false;
+		Survey survey = (Survey) o;
+		return Objects.equals(localisation, survey.localisation) &&
+				climate == survey.climate &&
+				landscape == survey.landscape &&
+				temperature == survey.temperature &&
+				Objects.equals(activityTypeAsSet(), survey.activityTypeAsSet());
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(localisation, climate, landscape, temperature, activityTypeAsSet());
+	}
+
+	private Set<ActivityType> activityTypeAsSet() {
+		return new HashSet<>(activityType);
+	}
+}

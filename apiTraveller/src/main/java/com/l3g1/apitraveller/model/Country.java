@@ -15,6 +15,8 @@ import jakarta.persistence.OneToMany;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
 import lombok.Data;
 // This class represents a country in the API Traveller model.
 @Data
@@ -119,5 +121,12 @@ public class Country {
     public void addCityList(City city) {
     	cityList.add(city);
     }
-    
+
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Country country = (Country) o;
+        return Objects.equals(countryName, country.countryName);
+    }
+
 }

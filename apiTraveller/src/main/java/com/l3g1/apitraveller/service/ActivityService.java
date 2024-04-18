@@ -3,12 +3,12 @@ package com.l3g1.apitraveller.service;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Service;
 import com.l3g1.apitraveller.model.Activity;
 import com.l3g1.apitraveller.repository.ActivityRepository;
 
 import lombok.Data;
-
 @Data
 @Service
 public class ActivityService {

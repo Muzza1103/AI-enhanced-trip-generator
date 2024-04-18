@@ -1,0 +1,193 @@
+package com.l3g1.apitraveller.controller;
+
+import com.l3g1.apitraveller.model.Country;
+import com.l3g1.apitraveller.model.Survey;
+import com.l3g1.apitraveller.model.TripSurvey;
+import com.l3g1.apitraveller.service.AiService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+import com.l3g1.apitraveller.dtoAi.AiRequest;
+import com.l3g1.apitraveller.dtoAi.AiResponse;
+
+@RestController
+@RequestMapping("/ai")
+public class AiController {
+	@Value("${openai.api.model}")
+	private String model;
+	@Value("${openai.api.url}")
+	private String apiUrl;
+
+	@Autowired
+	private RestTemplate template;
+
+	@Autowired
+	private AiService aiService;
+
+
+
+	private static String climateValues = "Climate: ['TROPICAL', 'DESERT', 'POLAR', 'MEDITERRANEAN', 'TEMPERATE']";
+	private static String landscapeValues = "Landscape: ['MOUNTAIN', 'BEACH', 'FOREST', 'DESERT', 'VALLEY', 'COASTAL', 'RURAL', 'URBAN']";
+	private static String temperatureValues = "Temperature: ['HOT', 'WARM', 'MILD', 'TEMPERATE', 'COOL', 'COLD']]";
+	private static String transportValues = "Transport: ['BUS', 'METRO', 'BICYCLE', 'SCOOTER', 'CAR', 'TAXI', 'FERRY', 'WALKING', 'TRAM', 'BIKE']";
+	private static String activityTypeValues = "Activity Type: ['OUTDOOR', 'CULTURAL', 'RELAXATION', 'ADVENTURE', 'GASTRONOMIC', 'ENTERTAINMENT', 'ROMANTIC', 'HISTORICAL', 'NONE']";
+	private static String continentValues = "Season: ['AUTUMN', 'SUMMER', 'SPRING', 'WINTER']";
+	private static String seasonTypeValues = "Continent: ['EUROPE', 'ASIA', 'AFRICA', 'NORTH_AMERICA', 'SOUTH_AMERICA', 'OCEANIA']";
+	//private static String criteriaValues = "Possible values for accessibility criteria: ['AGE', 'HEIGHT', 'WEIGHT', 'DISABILITY', 'MEDICAL', 'NONE']";
+	@GetMapping ("/chat")
+	public String chat() {
+		StringBuilder promptBuilder = new StringBuilder();
+		promptBuilder.append("Give me a travel suggestion in JSON format which includes a random country in the world, 3 cities in this country, and for each city propose three activities.\n");
+		promptBuilder.append("Cities are country attributes while activities are city attributes.\n");
+		promptBuilder.append("For country, the attributes are \"countryName\", \"climate\", \"continent\", \"description\" and \"cityList\".\n");
+		promptBuilder.append("\"climate\" must be one of the values in the following list " + climateValues + ".\n");
+		promptBuilder.append(" \"continent\" must be one of the values in the following list" + continentValues + ".\n");
+		promptBuilder.append("For each city, the attributes are \"cityName\", \"season\", \"climate\", \"temperature\", \"landscape\", \"description\", \"transportList\" and \"activityList\".\n");
+		promptBuilder.append("\"season\" must be one of the values in the following list " + seasonTypeValues + ".\n");
+		promptBuilder.append("\"climate\" must be one of the values in the following list " + climateValues + ".\n");
+		promptBuilder.append("\"temperature\" must be one of the values in the following list " + temperatureValues + ".\n");
+		promptBuilder.append("\"landscape\" must be one of the values in the following list " + landscapeValues + ".\n");
+		promptBuilder.append("the elements of \"transportList\" must belong to elements of the following list " + transportValues + ".\n");
+		promptBuilder.append("For each activity, the attributes are \"activityName\", \"activityType\", \"description\" and \"price\".\n");
+		promptBuilder.append("\"activityType\" must be one of the values in the following list" + activityTypeValues + ".\n");
+		/***
+		 promptBuilder.append("Give me a random country, three of its cities, and three activities in the activityList per city in the following format. Complete the data; price is an attribute with a number only, without the currency. Here are the only possible values for these specific attributes: " + climateValues + ", " + landscapeValues + ", " + temperatureValues + ", " + transportValues + ", " + activityTypeValues + ", " + seasonTypeValues + ", " + continentValues + "." +
+		 " For transportList, you can only put transport which is include in his specific list : " + transportValues + "and for activityList, the type of the activity has to be one of these specific values : " + activityTypeValues);
+		 promptBuilder.append("{\n");
+		 promptBuilder.append("    \"countryName\": \"\",\n");
+		 promptBuilder.append("    \"climate\": \"\",\n");
+		 promptBuilder.append("    \"continent\": \"\",\n");
+		 promptBuilder.append("    \"description\": \"\",\n");
+		 promptBuilder.append("    \"cityList\": [\n");
+		 promptBuilder.append("        {\n");
+		 promptBuilder.append("            \"cityName\": \"\",\n");
+		 promptBuilder.append("            \"season\": \"\",\n");
+		 promptBuilder.append("            \"climate\": \"\",\n");
+		 promptBuilder.append("            \"temperature\": \"\",\n");
+		 promptBuilder.append("            \"landscape\": \"\",\n");
+		 promptBuilder.append("            \"description\": \"\",\n");
+		 promptBuilder.append("            \"transportList\": [\"BUS\", \"METRO\", \"BICYCLE\", \"SCOOTER\", \"CAR\", \"TAXI\", \"BOAT\", \"WALKING\", \"TRAM\", \"BIKE\"],\n"); // Les valeurs possibles pour transportList sont énumérées ici
+		 promptBuilder.append("            \"activityList\": [\n");
+		 promptBuilder.append("                {\n");
+		 promptBuilder.append("                    \"activityName\": \"\",\n");
+		 promptBuilder.append("                    \"activityType\": \"\",\n");
+		 promptBuilder.append("                    \"description\": \"\",\n");
+		 promptBuilder.append("                    \"price\": \"\"\n");
+		 promptBuilder.append("                },\n");
+		 promptBuilder.append("                {\n");
+		 promptBuilder.append("                    \"activityName\": \"\",\n");
+		 promptBuilder.append("                    \"activityType\": \"\",\n");
+		 promptBuilder.append("                    \"description\": \"\",\n");
+		 promptBuilder.append("                    \"price\": \"\"\n");
+		 promptBuilder.append("                }\n");
+		 promptBuilder.append("            ]\n");
+		 promptBuilder.append("        },\n");
+		 promptBuilder.append("        {\n");
+		 promptBuilder.append("            \"cityName\": \"\",\n");
+		 promptBuilder.append("            \"season\": \"\",\n");
+		 promptBuilder.append("            \"climate\": \"\",\n");
+		 promptBuilder.append("            \"temperature\": \"\",\n");
+		 promptBuilder.append("            \"landscape\": \"\",\n");
+		 promptBuilder.append("            \"description\": \"\",\n");
+		 promptBuilder.append("            \"transportList\": [\"BUS\", \"METRO\", \"BICYCLE\", \"SCOOTER\", \"CAR\", \"TAXI\", \"BOAT\", \"WALKING\", \"TRAM\", \"BIKE\"],\n"); // Les valeurs possibles pour transportList sont énumérées ici
+		 promptBuilder.append("            \"activityList\": [\n");
+		 promptBuilder.append("                {\n");
+		 promptBuilder.append("                    \"activityName\": \"\",\n");
+		 promptBuilder.append("                    \"activityType\": \"\",\n");
+		 promptBuilder.append("                    \"description\": \"\",\n");
+		 promptBuilder.append("                    \"price\": \"\"\n");
+		 promptBuilder.append("                },\n");
+		 promptBuilder.append("                {\n");
+		 promptBuilder.append("                    \"activityName\": \"\",\n");
+		 promptBuilder.append("                    \"activityType\": \"\",\n");
+		 promptBuilder.append("                    \"description\": \"\",\n");
+		 promptBuilder.append("                    \"price\": \"\"\n");
+		 promptBuilder.append("                }\n");
+		 promptBuilder.append("            ]\n");
+		 promptBuilder.append("        }\n");
+		 promptBuilder.append("    ]\n");
+		 promptBuilder.append("}");
+		 ***/
+
+		String prompt = promptBuilder.toString();
+		AiRequest request = new AiRequest(model, prompt);
+		AiResponse response = template.postForObject(apiUrl, request, AiResponse.class);
+
+		if (response != null) {
+			return response.getChoices().get(0).getMessage().getContent();
+		}
+		return "";
+	}
+	@GetMapping ("/chatCity")
+	public String chatCity(@RequestBody Country country) {
+		StringBuilder promptBuilder = new StringBuilder();
+		promptBuilder.append("Give me a travel suggestion in JSON format for a city of " + country.getCountryName() + " and propose three activities in this city.\n");
+		promptBuilder.append("The attributes of the city are \"cityName\", \"season\", \"climate\", \"temperature\", \"landscape\", \"description\", \"transportList\", \"activityList\" and \"country\".\n");
+		promptBuilder.append("\"season\" must be one of the values in the following list " + seasonTypeValues + ".\n");
+		promptBuilder.append("\"climate\" = " + country.getClimateList()+ " .\n");
+		promptBuilder.append("\"temperature\" must be one of the values in the following list " + temperatureValues + ".\n");
+		promptBuilder.append("\"landscape\" must be one of the values in the following list " +  landscapeValues + ".\n");
+		promptBuilder.append("the elements of \"transportList\" must belong to elements of the following list " +  transportValues + ".\n");
+		promptBuilder.append("For country, the attributes are \"countryName\" = " + country.getCountryName() + " and \"climate\"  =" + country.getClimateList() + ".\n");
+		promptBuilder.append("For each activity, the attributes are \"activityName\", \"activityType\", \"description\" and \"price\" .\n");
+		promptBuilder.append("\"activityType\" must be one of the values in the following list " + activityTypeValues + ".\n");
+		promptBuilder.append("\"price\" must represent the price in euros but not specify the currency.");
+
+		/***
+		 promptBuilder.append("Give me a city of "+country.getCountryName()+", three activities in the activityList in the following format, here are the possible values for these attributes: "+climateValues+" "+landscapeValues+" "+temperatureValues+" "+transportValues+" "+activityTypeValues+", :");
+		 promptBuilder.append("{\n");
+		 promptBuilder.append("    \"cityName\": \"\",\n");
+		 promptBuilder.append("    \"season\": \"\",\n");
+		 promptBuilder.append("    \"climate\": \"\",\n");
+		 promptBuilder.append("    \"temperature\": \"\",\n");
+		 promptBuilder.append("    \"landscape\": \"\",\n");
+		 promptBuilder.append("    \"description\": \"\",\n");
+		 promptBuilder.append("    \"transportList\": [\"\"],\n");
+		 promptBuilder.append("    \"activityList\": [\n");
+		 promptBuilder.append("        {\n");
+		 promptBuilder.append("            \"activityName\": \" \",\n");
+		 promptBuilder.append("            \"activityType\": \"\",\n");
+		 promptBuilder.append("            \"description\": \"\",\n");
+		 promptBuilder.append("            \"price\": \"\"\n");
+		 promptBuilder.append("        },\n");
+		 promptBuilder.append("        {\n");
+		 promptBuilder.append("            \"activityName\": \"\",\n");
+		 promptBuilder.append("            \"activityType\": \"\",\n");
+		 promptBuilder.append("            \"description\": \"\",\n");
+		 promptBuilder.append("            \"price\": \"\"\n");
+		 promptBuilder.append("        }\n");
+		 promptBuilder.append("    ],\n");
+		 promptBuilder.append("    \"country\": {\n");
+		 promptBuilder.append("        \"countryName\": \""+country.getCountryName()+"\"\n");
+		 promptBuilder.append("        \"climate\": \""+country.getClimate()+"\"\n");
+		 promptBuilder.append("    }\n");
+		 promptBuilder.append("}\n");
+		 ***/
+
+		String prompt = promptBuilder.toString();
+		AiRequest request = new AiRequest(model, prompt);
+		AiResponse response = template.postForObject(apiUrl, request, AiResponse.class);
+
+		if (response != null) {
+			return response.getChoices().get(0).getMessage().getContent();
+		}
+		return "";
+
+	}
+
+	@GetMapping ("/chatTest")
+	public String chatTest(@RequestBody Survey survey) {
+		return aiService.chatCountry(survey);
+	}
+
+	@GetMapping ("/chatTripTest")
+	public String chatTest(@RequestBody TripSurvey tripSurvey) {
+		return aiService.chatTripCountry(tripSurvey);
+	}
+
+}

@@ -42,7 +42,6 @@ public class AiService {
     private static String landscapeValues = "landscape: [\"MOUNTAIN\", \"BEACH\", \"FOREST\", \"DESERT\", \"VALLEY\", \"COASTAL\", \"RURAL\", \"URBAN\"]";
     private static String temperatureValues = "temperature: [\"HOT\", \"WARM\", \"MILD\", \"TEMPERATE\", \"COOL\", \"COLD\"]]";
     private static String transportValues = "transport: [\"BUS\", \"METRO\", \"BICYCLE\", \"SCOOTER\", \"CAR\", \"TAXI\", \"FERRY\", \"WALKING\", \"TRAM\", \"BIKE\", \"OTHER\"]";
-    private static String activityTypeValues = "activityType: [\"OUTDOOR\", \"CULTURAL\", \"RELAXATION\", \"ADVENTURE\", \"GASTRONOMIC\", \"ENTERTAINMENT\", \"ROMANTIC\", \"HISTORICAL\", \"OTHER\"]";
     private static String continentValues = "continent: [\"EUROPE\", \"ASIA\", \"AFRICA\", \"NORTH_AMERICA\", \"SOUTH_AMERICA\", \"OCEANIA\",\"ANTARCTICA\"]";
 
     //Initiates a conversation with the AI to gather information about countries, cities, and activities based on the provided survey. Generates a prompt with specific criteria and sends it to the AI model. Processes the AI response to retrieve suggestions for country, cities, and activities.
@@ -765,4 +764,3 @@ public class AiService {
 
 
 }
-

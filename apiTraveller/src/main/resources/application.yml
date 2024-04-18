@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    password: //Your Password
-    url: jdbc:mysql://localhost:3306/db_name
-    username: //Your DB username
+    password: PasswordUserL3G1
+    url: jdbc:mysql://localhost:3306/bdd_apitraveller
+    username: User
   jpa:
     hibernate:
       ddl-auto: update
@@ -13,6 +13,11 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
     show-sql: true
+  cache:
+    cache-names:
+      - destinationSuggestion
+      - tripSuggestion
+
 
 openai:
   api:

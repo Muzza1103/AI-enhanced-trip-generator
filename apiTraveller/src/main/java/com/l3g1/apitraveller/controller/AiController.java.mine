@@ -43,8 +43,8 @@ public class AiController {
 	public String chat() {
 		// Constructing the prompt
 		StringBuilder promptBuilder = new StringBuilder();
-		promptBuilder.append("Give me a random country, three of its cities, and three activities in the activityList per city in the following format. Complete the data; price is an attribute with a number only, without the currency. Here are the only possible values for these specific attributes: " + climateValues + ", " + landscapeValues + ", " + temperatureValues + ", " + transportValues + ", " + activityTypeValues + ", " + seasonTypeValues + ", " + continentValues + "." +
-				" For transportList, you can only put transport which is include in his specific list : " + transportValues + "and for activityList, the type of the activity has to be one of these specific values : " + activityTypeValues);
+		 promptBuilder.append("Give me a random country, three of its cities, and three activities in the activityList per city in the following format. Complete the data; price is an attribute with a number only, without the currency. Here are the only possible values for these specific attributes: " + climateValues + ", " + landscapeValues + ", " + temperatureValues + ", " + transportValues + ", " + activityTypeValues + ", " + seasonTypeValues + ", " + continentValues + "." +
+		 " For transportList, you can only put transport which is include in his specific list : " + transportValues + "and for activityList, the type of the activity has to be one of these specific values : " + activityTypeValues);
 		promptBuilder.append(". Give me the result in the following format, complete the data, price is an attribute with the number only, consider the currency is the Dollar, :");
 		promptBuilder.append("{\n");
 		promptBuilder.append("    \"countryName\": \"\",\n");
@@ -114,33 +114,33 @@ public class AiController {
 	public String chatCity(@RequestBody Country country) {
 		// Constructing the prompt
 		StringBuilder promptBuilder = new StringBuilder();
-		promptBuilder.append("Give me a city of "+country.getCountryName()+", three activities in the activityList in the following format, here are the possible values for these attributes: "+climateValues+" "+landscapeValues+" "+temperatureValues+" "+transportValues+" "+activityTypeValues+", :");
-		promptBuilder.append("{\n");
-		promptBuilder.append("    \"cityName\": \"\",\n");
-		promptBuilder.append("    \"season\": \"\",\n");
-		promptBuilder.append("    \"climateList\": \"\",\n");
-		promptBuilder.append("    \"temperature\": \"\",\n");
-		promptBuilder.append("    \"landscape\": \"\",\n");
-		promptBuilder.append("    \"description\": \"\",\n");
-		promptBuilder.append("    \"transportList\": [\"\"],\n");
-		promptBuilder.append("    \"activityList\": [\n");
-		promptBuilder.append("        {\n");
-		promptBuilder.append("            \"activityName\": \" \",\n");
-		promptBuilder.append("            \"activityType\": \"\",\n");
-		promptBuilder.append("            \"description\": \"\",\n");
-		promptBuilder.append("            \"price\": \"\"\n");
-		promptBuilder.append("        },\n");
-		promptBuilder.append("        {\n");
-		promptBuilder.append("            \"activityName\": \"\",\n");
-		promptBuilder.append("            \"activityType\": \"\",\n");
-		promptBuilder.append("            \"description\": \"\",\n");
-		promptBuilder.append("            \"price\": \"\"\n");
-		promptBuilder.append("        }\n");
-		promptBuilder.append("    ],\n");
-		promptBuilder.append("    \"country\": {\n");
-		promptBuilder.append("        \"countryName\": \""+country.getCountryName()+"\"\n");
-		promptBuilder.append("    }\n");
-		promptBuilder.append("}\n");
+		 promptBuilder.append("Give me a city of "+country.getCountryName()+", three activities in the activityList in the following format, here are the possible values for these attributes: "+climateValues+" "+landscapeValues+" "+temperatureValues+" "+transportValues+" "+activityTypeValues+", :");
+		 promptBuilder.append("{\n");
+		 promptBuilder.append("    \"cityName\": \"\",\n");
+		 promptBuilder.append("    \"season\": \"\",\n");
+		 promptBuilder.append("    \"climateList\": \"\",\n");
+		 promptBuilder.append("    \"temperature\": \"\",\n");
+		 promptBuilder.append("    \"landscape\": \"\",\n");
+		 promptBuilder.append("    \"description\": \"\",\n");
+		 promptBuilder.append("    \"transportList\": [\"\"],\n");
+		 promptBuilder.append("    \"activityList\": [\n");
+		 promptBuilder.append("        {\n");
+		 promptBuilder.append("            \"activityName\": \" \",\n");
+		 promptBuilder.append("            \"activityType\": \"\",\n");
+		 promptBuilder.append("            \"description\": \"\",\n");
+		 promptBuilder.append("            \"price\": \"\"\n");
+		 promptBuilder.append("        },\n");
+		 promptBuilder.append("        {\n");
+		 promptBuilder.append("            \"activityName\": \"\",\n");
+		 promptBuilder.append("            \"activityType\": \"\",\n");
+		 promptBuilder.append("            \"description\": \"\",\n");
+		 promptBuilder.append("            \"price\": \"\"\n");
+		 promptBuilder.append("        }\n");
+		 promptBuilder.append("    ],\n");
+		 promptBuilder.append("    \"country\": {\n");
+		 promptBuilder.append("        \"countryName\": \""+country.getCountryName()+"\"\n");
+		 promptBuilder.append("    }\n");
+		 promptBuilder.append("}\n");
 
 		String prompt = promptBuilder.toString();
 		// Sending the prompt to the AI API and retrieving the response

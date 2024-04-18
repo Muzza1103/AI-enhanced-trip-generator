@@ -34,12 +34,12 @@ public class CityService {
 
     //Deletes a city from the repository by its unique identifier.
     public void deleteCity(final Long id) {
-    	cityRepository.deleteById(id);
+        cityRepository.deleteById(id);
     }
 
     //Saves a city to the repository.
     public City saveCity(City city) {
-    	City savedCity = cityRepository.save(city);
+        City savedCity = cityRepository.save(city);
         return savedCity;
     }
 
@@ -88,5 +88,5 @@ public class CityService {
             e.printStackTrace();
         }
     }
-    
+
 }

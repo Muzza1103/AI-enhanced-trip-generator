@@ -23,10 +23,10 @@ public class CountryService {
 
     @Autowired
     private CountryRepository countryRepository;
-    
+
     @Autowired
     private CityRepository cityRepository;
-    
+
     @Autowired
     private CityService cityService;
 
@@ -34,7 +34,7 @@ public class CountryService {
     public Optional<Country> getCountryID(final Long id) {
         return countryRepository.findById(id);
     }
-    
+
     // Retrieves all countries stored in the repository.
     public Iterable<Country> getCountry() {
         return countryRepository.findAll();
@@ -53,7 +53,7 @@ public class CountryService {
 
     // Saves a country to the repository.
     public Country saveCountry(Country country) {
-    	Country savedCountry = countryRepository.save(country);
+        Country savedCountry = countryRepository.save(country);
         return savedCountry;
     }
 
