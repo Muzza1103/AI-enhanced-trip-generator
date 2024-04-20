@@ -1,5 +1,8 @@
 package com.l3g1.apitraveller.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.l3g1.apitraveller.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.time.Duration;
@@ -17,6 +20,7 @@ import com.l3g1.apitraveller.service.DestinationSuggestionService;
 
 @RestController
 @RequestMapping("/suggestion")
+@CrossOrigin
 public class DestinationSuggestionController {
 
 	@Autowired
@@ -76,7 +80,7 @@ public class DestinationSuggestionController {
 
 	// GET endpoint to retrieve suggestions with AI based on survey criteria with additional processing
 	@GetMapping("/getSuggestAI")
-	public String getSuggestionAI(
+	public ObjectNode getSuggestionAI(
 			@RequestParam String localisation,
 			@RequestParam Climate climate,
 			@RequestParam Landscape landscape,
@@ -84,97 +88,100 @@ public class DestinationSuggestionController {
 			@RequestParam List<ActivityType> activityType
 	) {
 		Survey survey = new Survey(localisation,climate,landscape,temperature,activityType);
-		Instant start = Instant.now();
 		Iterable<Suggestion> suggestions = new ArrayList<>();
 
 		try{
 			suggestions = DestinationSuggestionService.getSuggestionAI(survey);
 		}catch (IllegalArgumentException e){
-			return e.getMessage();
+			ObjectMapper objectMapper = new ObjectMapper();
+			ObjectNode errorNode = objectMapper.createObjectNode();
+			errorNode.put("error", e.getMessage());
+			return errorNode;
 		}
 
-		StringBuilder resultBuilder = new StringBuilder();
-
+		ObjectMapper objectMapper = new ObjectMapper();
+		ObjectNode jsonNode = objectMapper.createObjectNode();
+		ArrayNode suggestionsArray = objectMapper.createArrayNode();
 		// Process suggestions based on survey criteria
 		if (survey.getLocalisation().equals("ALL")||Continent.isValidValue(survey.getLocalisation().toUpperCase())) {
 			// Process all countries
 			for (Suggestion suggestion : suggestions) {
+				ObjectNode suggestionNode = objectMapper.createObjectNode();
 				// Append country details
-				resultBuilder.append("Country: ").append(suggestion.getCountry().getCountryName()).append("\n");
-				resultBuilder.append("Continent: ").append(suggestion.getCountry().getContinent()).append("\n");
-				resultBuilder.append("Description: ").append(suggestion.getCountry().getDescription()).append("\n");
-				resultBuilder.append("List of the Climates:");
-				List<Climate> climateList = suggestion.getCountry().getClimateList();
-				for (Climate clt : climateList) {
-					resultBuilder.append(" ").append(clt);
-				}
-				resultBuilder.append("\n\n");
+				ObjectNode countryNode = objectMapper.createObjectNode();
+				countryNode.put("Country", suggestion.getCountry().getCountryName());
+				countryNode.put("Description", suggestion.getCountry().getDescription());
 
 				// Append city details
-				resultBuilder.append("City: ").append(suggestion.getCity().getCityName()).append("\n");
-				resultBuilder.append("Description: ").append(suggestion.getCity().getDescription()).append("\n");
-				resultBuilder.append("Climate: ").append(suggestion.getCity().getClimate()).append("\n");
-				resultBuilder.append("Temperature: ").append(suggestion.getCity().getTemperature()).append("\n");
-				resultBuilder.append("Transport: ").append(suggestion.getCity().getTransport()).append("\n\n");
+				ObjectNode cityNode = objectMapper.createObjectNode();
+				cityNode.put("City", suggestion.getCity().getCityName());
+				cityNode.put("Description", suggestion.getCity().getDescription());
+				cityNode.put("Climate", String.valueOf(suggestion.getCity().getClimate()));
+				cityNode.put("Temperature", String.valueOf(suggestion.getCity().getTemperature()));
+				cityNode.put("Transport", String.valueOf(suggestion.getCity().getTransport()));
 
 				// Append activities details
-				resultBuilder.append("Activities:\n");
+				ArrayNode activitiesArray = objectMapper.createArrayNode();
 				for (int i = 0; i < suggestion.getActivityList().size(); i++) {
-					resultBuilder.append("  Activity ").append(i + 1).append(":\n");
-					resultBuilder.append("    Name: ").append(suggestion.getActivityList().get(i).getActivityName()).append("\n");
-					resultBuilder.append("    Type of the activity: ").append(suggestion.getActivityList().get(i).getActivityType()).append("\n");
-					resultBuilder.append("    Description: ").append(suggestion.getActivityList().get(i).getDescription()).append("\n");
-					resultBuilder.append("    Price: ").append(suggestion.getActivityList().get(i).getPrice()).append("\n\n");
+					ObjectNode activityNode = objectMapper.createObjectNode();
+					activityNode.put("Activity", (i + 1));
+					activityNode.put("Name", suggestion.getActivityList().get(i).getActivityName());
+					activityNode.put("Type of the activity", String.valueOf(suggestion.getActivityList().get(i).getActivityType()));
+					activityNode.put("Description", suggestion.getActivityList().get(i).getDescription());
+					activityNode.put("Price", suggestion.getActivityList().get(i).getPrice());
+					activitiesArray.add(activityNode);
 				}
-				resultBuilder.append("\n\n\n");
+				suggestionNode.set("Country", countryNode);
+				suggestionNode.set("City", cityNode);
+				suggestionNode.set("Activities", activitiesArray);
+
+				suggestionsArray.add(suggestionNode);
 			}
+			jsonNode.set("Suggestions", suggestionsArray);
 		} else {
 			// Process specific country
 			Suggestion suggest = suggestions.iterator().next();
-			resultBuilder.append("Country: ").append(suggest.getCountry().getCountryName()).append("\n");
-			resultBuilder.append("Continent: ").append(suggest.getCountry().getContinent()).append("\n");
-			resultBuilder.append("Description: ").append(suggest.getCountry().getDescription()).append("\n");
-			resultBuilder.append("List of the Climates:");
-			List<Climate> climateList = suggest.getCountry().getClimateList();
-			for (Climate clt : climateList) {
-				resultBuilder.append(" ").append(clt);
-			}
-			resultBuilder.append("\n\n\n");
+			jsonNode.put("Country", suggest.getCountry().getCountryName());
+			jsonNode.put("Continent", String.valueOf(suggest.getCountry().getContinent()));
+			jsonNode.put("Description", suggest.getCountry().getDescription());
 
 			// Process cities and activities for the specific country
+			ArrayNode suggestionsArrays = objectMapper.createArrayNode();
 			for (Suggestion suggestion : suggestions) {
-				resultBuilder.append("City: ").append(suggestion.getCity().getCityName()).append("\n");
-				resultBuilder.append("Description: ").append(suggestion.getCity().getDescription()).append("\n");
-				resultBuilder.append("Climate: ").append(suggestion.getCity().getClimate()).append("\n");
-				resultBuilder.append("Temperature: ").append(suggestion.getCity().getTemperature()).append("\n");
-				resultBuilder.append("Transport: ").append(suggestion.getCity().getTransport()).append("\n\n");
+				ObjectNode suggestionNode = objectMapper.createObjectNode();
+				ObjectNode cityNode = objectMapper.createObjectNode();
+
+				cityNode.put("City", suggestion.getCity().getCityName());
+				cityNode.put("Description", suggestion.getCity().getDescription());
+				cityNode.put("Climate", String.valueOf(suggestion.getCity().getClimate()));
+				cityNode.put("Temperature", String.valueOf(suggestion.getCity().getTemperature()));
+				cityNode.put("Transport", String.valueOf(suggestion.getCity().getTransport()));
 
 				// Append activities details
-				resultBuilder.append("Activities:\n");
+				ArrayNode activitiesArray = objectMapper.createArrayNode();
 				for (int i = 0; i < suggestion.getActivityList().size(); i++) {
-					resultBuilder.append("  Activity ").append(i + 1).append(":\n");
-					resultBuilder.append("    Name: ").append(suggestion.getActivityList().get(i).getActivityName()).append("\n");
-					resultBuilder.append("    Type of the activity: ").append(suggestion.getActivityList().get(i).getActivityType()).append("\n");
-					resultBuilder.append("    Description: ").append(suggestion.getActivityList().get(i).getDescription()).append("\n");
-					resultBuilder.append("    Price: ").append(suggestion.getActivityList().get(i).getPrice()).append("\n\n");
+					ObjectNode activityNode = objectMapper.createObjectNode();
+					activityNode.put("Activity" , (i + 1));
+					activityNode.put("Name", suggestion.getActivityList().get(i).getActivityName());
+					activityNode.put("Type of the activity", String.valueOf(suggestion.getActivityList().get(i).getActivityType()));
+					activityNode.put("Description", suggestion.getActivityList().get(i).getDescription());
+					activityNode.put("Price", suggestion.getActivityList().get(i).getPrice());
+					activitiesArray.add(activityNode);
 				}
-				resultBuilder.append("\n\n");
+				suggestionNode.set("City", cityNode);
+				suggestionNode.set("Activities", activitiesArray);
+
+				suggestionsArray.add(suggestionNode);
 			}
+			jsonNode.set("Suggestions", suggestionsArray);
 		}
 
-		Instant end = Instant.now();
-		Duration duration = Duration.between(start, end);
-		long seconds = duration.toSeconds();
-
-		resultBuilder.insert(0, "Execution time: " + seconds + " seconds\n\n");
-
-		return resultBuilder.toString();
+		return jsonNode;
 	}
-
 
 	// GET endpoint to retrieve suggestions with AI and with the usage of a cache
 	@GetMapping("/getDestinationSuggestion")
-	public String getDestinationSuggestion(
+	public ObjectNode getDestinationSuggestion(
 			@RequestParam String localisation,
 			@RequestParam Climate climate,
 			@RequestParam Landscape landscape,
@@ -182,91 +189,95 @@ public class DestinationSuggestionController {
 			@RequestParam List<ActivityType> activityType
 	) {
 		Survey survey = new Survey(localisation,climate,landscape,temperature,activityType);
-		Instant start = Instant.now();
 		Iterable<Suggestion> suggestions = new ArrayList<>();
 
 		try{
 			suggestions = DestinationSuggestionService.getSuggestionAIWithCache(survey);
 		}catch (IllegalArgumentException e){
-			return e.getMessage();
+			ObjectMapper objectMapper = new ObjectMapper();
+			ObjectNode errorNode = objectMapper.createObjectNode();
+			errorNode.put("error", e.getMessage());
+			return errorNode;
 		}
 
-		StringBuilder resultBuilder = new StringBuilder();
-
+		ObjectMapper objectMapper = new ObjectMapper();
+		ObjectNode jsonNode = objectMapper.createObjectNode();
+		ArrayNode suggestionsArray = objectMapper.createArrayNode();
 		// Process suggestions based on survey criteria
 		if (survey.getLocalisation().equals("ALL")||Continent.isValidValue(survey.getLocalisation().toUpperCase())) {
 			// Process all countries
 			for (Suggestion suggestion : suggestions) {
+				ObjectNode suggestionNode = objectMapper.createObjectNode();
 				// Append country details
-				resultBuilder.append("Country: ").append(suggestion.getCountry().getCountryName()).append("\n");
-				resultBuilder.append("Continent: ").append(suggestion.getCountry().getContinent()).append("\n");
-				resultBuilder.append("Description: ").append(suggestion.getCountry().getDescription()).append("\n");
-				resultBuilder.append("List of the Climates:");
-				List<Climate> climateList = suggestion.getCountry().getClimateList();
-				for (Climate clt : climateList) {
-					resultBuilder.append(" ").append(clt);
-				}
-				resultBuilder.append("\n\n");
+				ObjectNode countryNode = objectMapper.createObjectNode();
+				countryNode.put("Country", suggestion.getCountry().getCountryName());
+				countryNode.put("Description", suggestion.getCountry().getDescription());
 
 				// Append city details
-				resultBuilder.append("City: ").append(suggestion.getCity().getCityName()).append("\n");
-				resultBuilder.append("Description: ").append(suggestion.getCity().getDescription()).append("\n");
-				resultBuilder.append("Climate: ").append(suggestion.getCity().getClimate()).append("\n");
-				resultBuilder.append("Temperature: ").append(suggestion.getCity().getTemperature()).append("\n");
-				resultBuilder.append("Transport: ").append(suggestion.getCity().getTransport()).append("\n\n");
+				ObjectNode cityNode = objectMapper.createObjectNode();
+				cityNode.put("City", suggestion.getCity().getCityName());
+				cityNode.put("Description", suggestion.getCity().getDescription());
+				cityNode.put("Climate", String.valueOf(suggestion.getCity().getClimate()));
+				cityNode.put("Temperature", String.valueOf(suggestion.getCity().getTemperature()));
+				cityNode.put("Transport", String.valueOf(suggestion.getCity().getTransport()));
 
 				// Append activities details
-				resultBuilder.append("Activities:\n");
+				ArrayNode activitiesArray = objectMapper.createArrayNode();
 				for (int i = 0; i < suggestion.getActivityList().size(); i++) {
-					resultBuilder.append("  Activity ").append(i + 1).append(":\n");
-					resultBuilder.append("    Name: ").append(suggestion.getActivityList().get(i).getActivityName()).append("\n");
-					resultBuilder.append("    Type of the activity: ").append(suggestion.getActivityList().get(i).getActivityType()).append("\n");
-					resultBuilder.append("    Description: ").append(suggestion.getActivityList().get(i).getDescription()).append("\n");
-					resultBuilder.append("    Price: ").append(suggestion.getActivityList().get(i).getPrice()).append("\n\n");
+					ObjectNode activityNode = objectMapper.createObjectNode();
+					activityNode.put("Activity", (i + 1));
+					activityNode.put("Name", suggestion.getActivityList().get(i).getActivityName());
+					activityNode.put("Type of the activity", String.valueOf(suggestion.getActivityList().get(i).getActivityType()));
+					activityNode.put("Description", suggestion.getActivityList().get(i).getDescription());
+					activityNode.put("Price", suggestion.getActivityList().get(i).getPrice());
+					activitiesArray.add(activityNode);
 				}
-				resultBuilder.append("\n\n\n");
+				suggestionNode.set("Country", countryNode);
+				suggestionNode.set("City", cityNode);
+				suggestionNode.set("Activities", activitiesArray);
+
+				suggestionsArray.add(suggestionNode);
 			}
+			jsonNode.set("Suggestions", suggestionsArray);
 		} else {
 			// Process specific country
 			Suggestion suggest = suggestions.iterator().next();
-			resultBuilder.append("Country: ").append(suggest.getCountry().getCountryName()).append("\n");
-			resultBuilder.append("Continent: ").append(suggest.getCountry().getContinent()).append("\n");
-			resultBuilder.append("Description: ").append(suggest.getCountry().getDescription()).append("\n");
-			resultBuilder.append("List of the Climates:");
-			List<Climate> climateList = suggest.getCountry().getClimateList();
-			for (Climate clt : climateList) {
-				resultBuilder.append(" ").append(clt);
-			}
-			resultBuilder.append("\n\n\n");
+			jsonNode.put("Country", suggest.getCountry().getCountryName());
+			jsonNode.put("Continent", String.valueOf(suggest.getCountry().getContinent()));
+			jsonNode.put("Description", suggest.getCountry().getDescription());
 
 			// Process cities and activities for the specific country
+			ArrayNode suggestionsArrays = objectMapper.createArrayNode();
 			for (Suggestion suggestion : suggestions) {
-				resultBuilder.append("City: ").append(suggestion.getCity().getCityName()).append("\n");
-				resultBuilder.append("Description: ").append(suggestion.getCity().getDescription()).append("\n");
-				resultBuilder.append("Climate: ").append(suggestion.getCity().getClimate()).append("\n");
-				resultBuilder.append("Temperature: ").append(suggestion.getCity().getTemperature()).append("\n");
-				resultBuilder.append("Transport: ").append(suggestion.getCity().getTransport()).append("\n\n");
+				ObjectNode suggestionNode = objectMapper.createObjectNode();
+				ObjectNode cityNode = objectMapper.createObjectNode();
+
+				cityNode.put("City", suggestion.getCity().getCityName());
+				cityNode.put("Description", suggestion.getCity().getDescription());
+				cityNode.put("Climate", String.valueOf(suggestion.getCity().getClimate()));
+				cityNode.put("Temperature", String.valueOf(suggestion.getCity().getTemperature()));
+				cityNode.put("Transport", String.valueOf(suggestion.getCity().getTransport()));
 
 				// Append activities details
-				resultBuilder.append("Activities:\n");
+				ArrayNode activitiesArray = objectMapper.createArrayNode();
 				for (int i = 0; i < suggestion.getActivityList().size(); i++) {
-					resultBuilder.append("  Activity ").append(i + 1).append(":\n");
-					resultBuilder.append("    Name: ").append(suggestion.getActivityList().get(i).getActivityName()).append("\n");
-					resultBuilder.append("    Type of the activity: ").append(suggestion.getActivityList().get(i).getActivityType()).append("\n");
-					resultBuilder.append("    Description: ").append(suggestion.getActivityList().get(i).getDescription()).append("\n");
-					resultBuilder.append("    Price: ").append(suggestion.getActivityList().get(i).getPrice()).append("\n\n");
+					ObjectNode activityNode = objectMapper.createObjectNode();
+					activityNode.put("Activity", (i + 1));
+					activityNode.put("Name", suggestion.getActivityList().get(i).getActivityName());
+					activityNode.put("Type of the activity", String.valueOf(suggestion.getActivityList().get(i).getActivityType()));
+					activityNode.put("Description", suggestion.getActivityList().get(i).getDescription());
+					activityNode.put("Price", suggestion.getActivityList().get(i).getPrice());
+					activitiesArray.add(activityNode);
 				}
-				resultBuilder.append("\n\n");
+				suggestionNode.set("City", cityNode);
+				suggestionNode.set("Activities", activitiesArray);
+
+				suggestionsArray.add(suggestionNode);
 			}
+			jsonNode.set("Suggestions", suggestionsArray);
 		}
 
-		Instant end = Instant.now();
-		Duration duration = Duration.between(start, end);
-		long seconds = duration.toSeconds();
-
-		resultBuilder.insert(0, "Execution time: " + seconds + " seconds\n\n");
-
-		return resultBuilder.toString();
+		return jsonNode;
 	}
 
 }

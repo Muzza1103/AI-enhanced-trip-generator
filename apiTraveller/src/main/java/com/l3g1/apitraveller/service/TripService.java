@@ -51,14 +51,21 @@ public class TripService {
     public List<TripSuggestion> getSuggestion(TripSurvey survey) throws IllegalArgumentException{
 
         // Extract survey parameters
-        String localisation = survey.getLocalisation().toLowerCase().replace("_", " ");
-        localisation = Character.toUpperCase(localisation.charAt(0)) + localisation.substring(1);
-        for (int i = 0; i < localisation.length(); i++) {
-            if (localisation.charAt(i) == ' ') {
-                localisation = localisation.substring(0, i + 1) + Character.toUpperCase(localisation.charAt(i + 1)) + localisation.substring(i + 2);
+        if(Continent.isValidValue(survey.getLocalisation().toUpperCase().replace(" ", "_"))){
+            survey.setLocalisation(survey.getLocalisation().toUpperCase().replace(" ", "_"));
+        }else if (!survey.getLocalisation().equals("ALL")) {
+            String localisation = survey.getLocalisation().toLowerCase().replace("_", " ");
+            // Capitalizes the first letter of the location
+            localisation = Character.toUpperCase(localisation.charAt(0)) + localisation.substring(1);
+            // Capitalizes the first letter after each space in the location
+            for (int i = 0; i < localisation.length(); i++) {
+                if (localisation.charAt(i) == ' ') {
+                    localisation = localisation.substring(0, i + 1) + Character.toUpperCase(localisation.charAt(i + 1)) + localisation.substring(i + 2);
+                }
             }
+            survey.setLocalisation(localisation);
         }
-        survey.setLocalisation(localisation);
+        String localisation = survey.getLocalisation();
         Climate climate = survey.getClimate();
         Boolean roadTrip = survey.isRoadTrip();
         Landscape landscape = survey.getLandscape();
@@ -86,7 +93,7 @@ public class TripService {
         random = new Random();
 
         // Generate suggestions based on survey criteria
-        if (localisation.equals("ALL")||Continent.isValidValue(localisation.toUpperCase().replace(" ", "_"))||RecognizedCountry.isValidValue(localisation.toUpperCase().replace(" ", "_"))){
+        if (localisation.equals("ALL")||Continent.isValidValue(localisation.toUpperCase().replace(" ", ""))||RecognizedCountry.isValidValue(localisation.toUpperCase().replace(" ", ""))){
             // Manage the code for both cases as the code is almost the same for the two, only the initialisation of countryList change
             if (localisation.equals("ALL")) { // No specific country specified by the user, the function will return 1 to 3 suggestions of different countries
                 // Retrieve list of countries based on the Climate in the survey
@@ -291,7 +298,9 @@ public class TripService {
 
         // Extract survey parameters
         // Correct the localisation given by the user to avoid creating erros in the database related to typing issues
-        if(!survey.getLocalisation().equals("ALL")) {
+        if(Continent.isValidValue(survey.getLocalisation().toUpperCase().replace(" ", "_"))){
+            survey.setLocalisation(survey.getLocalisation().toUpperCase().replace(" ", "_"));
+        }else if (!survey.getLocalisation().equals("ALL")) {
             String localisation = survey.getLocalisation().toLowerCase().replace("_", " ");
             // Capitalizes the first letter of the location
             localisation = Character.toUpperCase(localisation.charAt(0)) + localisation.substring(1);
@@ -336,15 +345,22 @@ public class TripService {
         int iterationActivityAI = 0;
         int iterationDailyActivityAI = 0;
 
+        List<List<TripSuggestion>> suggestionsFromCache = getTripSuggestionFromCache(survey);
+        if (suggestionsFromCache!=null&&!suggestionsFromCache.isEmpty()) {
+            List<TripSuggestion> randomSuggestionFromCache = suggestionsFromCache.get(random.nextInt(suggestionsFromCache.size()));
+            return randomSuggestionFromCache;
+        }
+
+
         // Generate suggestions based on survey criteria
-        if (localisation.equals("ALL")||Continent.isValidValue(localisation.toUpperCase().replace(" ", "_"))||RecognizedCountry.isValidValue(localisation.toUpperCase().replace(" ", "_"))){
+        if (localisation.equals("ALL")||Continent.isValidValue(localisation.toUpperCase().replace(" ", ""))||RecognizedCountry.isValidValue(localisation.toUpperCase().replace(" ", ""))){
             // Manage the code for both cases as the code is almost the same for the two, only the initialisation of countryList change
             if (localisation.equals("ALL")||Continent.isValidValue(localisation.toUpperCase().replace(" ", "_"))) {
                 // No specific country specified by the user, the function will return 1 to 3 suggestions of different countries
                 if(localisation.equals("ALL")){
                     // Retrieve list of countries based on the Climate in the survey
                     if (climate.equals(Climate.ALL)) {
-                       countryList = countryRepository.findAll();
+                        countryList = countryRepository.findAll();
                     } else {
                         countryList = findAllByClimateListContaining(climate);
                     }
@@ -357,7 +373,7 @@ public class TripService {
                         countryList = findCountryByContinentAndClimateListContaining(Continent.valueOf(localisation.toUpperCase()), climate);
                     }
                 }
-                if(!countryList.isEmpty()) {
+                if(countryList != null && !countryList.isEmpty()) {
                     // Select a random country in the list of country
                     randomIndex = random.nextInt(countryList.size());
                     countryDest = countryList.get(randomIndex);
@@ -586,7 +602,7 @@ public class TripService {
                                             activities.remove(randomIdx);
                                         }
                                         iterationDailyActivityAI++;
-                                    // Add the chosen activity to the list of chosen activities and update the cost
+                                        // Add the chosen activity to the list of chosen activities and update the cost
                                     }
                                     if(dailyActivity!=null) {
                                         cost += dailyActivity.getPrice();
@@ -827,6 +843,7 @@ public class TripService {
         }else{
             throw new IllegalArgumentException("The localisation you have given in the survey is incorrect, please check the survey.");
         }
+        putSuggestionInCache(survey, listTripSuggestion);
         // Return the list of suggestions
         return listTripSuggestion;
     }
@@ -836,8 +853,10 @@ public class TripService {
     public List<TripSuggestion> getSuggestionAIWithCache(TripSurvey survey) throws IllegalArgumentException{
 
         // Extract survey parameters
-        // Correct the localisation given by the user to avoid creating erros in the database related to typing issues
-        if(!survey.getLocalisation().equals("ALL")) {
+        // Correct the localisation given by the user to avoid creating errors in the database related to typing issues
+        if(Continent.isValidValue(survey.getLocalisation().toUpperCase().replace(" ", "_"))){
+            survey.setLocalisation(survey.getLocalisation().toUpperCase().replace(" ", "_"));
+        }else if (!survey.getLocalisation().equals("ALL")) {
             String localisation = survey.getLocalisation().toLowerCase().replace("_", " ");
             // Capitalizes the first letter of the location
             localisation = Character.toUpperCase(localisation.charAt(0)) + localisation.substring(1);
@@ -881,7 +900,7 @@ public class TripService {
         int iterationActivityAI = 0;
         int iterationDailyActivityAI = 0;
 
-        List<TripSuggestion> suggestionsFromCache = getTripSuggestionFromCache(survey);
+        List<List<TripSuggestion>> suggestionsFromCache = getTripSuggestionFromCache(survey);
 
         // Generate suggestions based on survey criteria
         if (localisation.equals("ALL")||Continent.isValidValue(localisation.toUpperCase().replace(" ", "_"))||RecognizedCountry.isValidValue(localisation.toUpperCase().replace(" ", "_"))){
@@ -906,10 +925,12 @@ public class TripService {
                 }
 
                 if(suggestionsFromCache != null) {
-                    for (TripSuggestion tripSuggestion : suggestionsFromCache) {
-                        Country country = tripSuggestion.getCountry();
-                        if (country != null && countryList.contains(country)) {
-                            countryList.remove(country);
+                    for(List<TripSuggestion> suggestionFromCache : suggestionsFromCache) {
+                        for (TripSuggestion tripSuggestion : suggestionFromCache) {
+                            Country country = tripSuggestion.getCountry();
+                            if (country != null && countryList.contains(country)) {
+                                countryList.remove(country);
+                            }
                         }
                     }
                 }
@@ -948,11 +969,13 @@ public class TripService {
                     }
                     iterationCountryAI++;
 
-                    if (suggestionsFromCache != null) {
-                        for (TripSuggestion suggestion : suggestionsFromCache) {
-                            Country country = suggestion.getCountry();
-                            if (country != null && countryList.contains(country)) {
-                                countryList.remove(country);
+                    if(suggestionsFromCache != null) {
+                        for(List<TripSuggestion> suggestionFromCache : suggestionsFromCache) {
+                            for (TripSuggestion tripSuggestion : suggestionFromCache) {
+                                Country country = tripSuggestion.getCountry();
+                                if (country != null && countryList.contains(country)) {
+                                    countryList.remove(country);
+                                }
                             }
                         }
                     }
@@ -996,16 +1019,18 @@ public class TripService {
                 // Filter cities in the selected country based on criteria
                 cityList = filterCitiesByCriteria(countryDest, landscape, temperature, climate);
 
-                if (suggestionsFromCache != null) {
-                    for (TripSuggestion suggestion : suggestionsFromCache) {
-                        City city = suggestion.getCity();
-                        if (city != null && cityList.contains(city)) {
-                            cityList.remove(city);
+                if(suggestionsFromCache != null) {
+                    for(List<TripSuggestion> suggestionFromCache : suggestionsFromCache) {
+                        for (TripSuggestion tripSuggestion : suggestionFromCache) {
+                            Country country = tripSuggestion.getCountry();
+                            if (country != null && countryList.contains(country)) {
+                                countryList.remove(country);
+                            }
                         }
                     }
                 }
 
-                // Verify if the user want a suggestion for a travel through multiple cities or not
+                // Verify if the user want a suggestion for travel through multiple cities or not
                 if (!roadTrip) {
                     // Retry until enough cities are found or a maximum iteration count is reached
                     while(cityList.isEmpty() && iterationCityAI < 10) {
@@ -1029,11 +1054,13 @@ public class TripService {
                         cityList = filterCitiesByCriteria(countryDest, landscape, temperature, climate);
                         iterationCityAI++;
 
-                        if (suggestionsFromCache != null) {
-                            for (TripSuggestion suggestion : suggestionsFromCache) {
-                                City city = suggestion.getCity();
-                                if (city != null && cityList.contains(city)) {
-                                    cityList.remove(city);
+                        if(suggestionsFromCache != null) {
+                            for(List<TripSuggestion> suggestionFromCache : suggestionsFromCache) {
+                                for (TripSuggestion tripSuggestion : suggestionFromCache) {
+                                    Country country = tripSuggestion.getCountry();
+                                    if (country != null && countryList.contains(country)) {
+                                        countryList.remove(country);
+                                    }
                                 }
                             }
                         }
@@ -1206,11 +1233,13 @@ public class TripService {
                     // Calculate the number of cities to visit during the road trip
                     int numberOfCitiesInRoadTrip = (int) Math.max(1, Math.ceil((double) timeTrip / 7));
 
-                    if (suggestionsFromCache != null) {
-                        for (TripSuggestion suggestion : suggestionsFromCache) {
-                            City city = suggestion.getCity();
-                            if (city != null && cityList.contains(city)) {
-                                cityList.remove(city);
+                    if(suggestionsFromCache != null) {
+                        for(List<TripSuggestion> suggestionFromCache : suggestionsFromCache) {
+                            for (TripSuggestion tripSuggestion : suggestionFromCache) {
+                                Country country = tripSuggestion.getCountry();
+                                if (country != null && countryList.contains(country)) {
+                                    countryList.remove(country);
+                                }
                             }
                         }
                     }
@@ -1238,11 +1267,13 @@ public class TripService {
                         cityList = filterCitiesByCriteria(countryDest, landscape, temperature, climate);
                         iterationCityAI++;
 
-                        if (suggestionsFromCache != null) {
-                            for (TripSuggestion suggestion : suggestionsFromCache) {
-                                City city = suggestion.getCity();
-                                if (city != null && cityList.contains(city)) {
-                                    cityList.remove(city);
+                        if(suggestionsFromCache != null) {
+                            for(List<TripSuggestion> suggestionFromCache : suggestionsFromCache) {
+                                for (TripSuggestion tripSuggestion : suggestionFromCache) {
+                                    Country country = tripSuggestion.getCountry();
+                                    if (country != null && countryList.contains(country)) {
+                                        countryList.remove(country);
+                                    }
                                 }
                             }
                         }
@@ -1437,34 +1468,36 @@ public class TripService {
         return listTripSuggestion;
     }
 
-
-    public List<TripSuggestion> getTripSuggestionFromCache(TripSurvey survey) throws IllegalArgumentException {
+    //Return the list of suggestions for the specific survey if it is in the cache
+    public List<List<TripSuggestion>> getTripSuggestionFromCache(TripSurvey survey) throws IllegalArgumentException {
         Cache cache = cacheManager.getCache("tripSuggestion");
         TripSurvey cacheKey = survey;
         Cache.ValueWrapper valueWrapper = cache != null ? cache.get(cacheKey) : null;
 
         if (valueWrapper != null) {
-            return (List<TripSuggestion>) valueWrapper.get();
+            return (List<List<TripSuggestion>>) valueWrapper.get();
         }
 
         return null;
     }
 
+    //Put the list of suggestions for the specific survey in the cache
     public void putSuggestionInCache(TripSurvey survey, List<TripSuggestion> newSuggestions) throws IllegalArgumentException {
         Cache cache = cacheManager.getCache("tripSuggestion");
         TripSurvey cacheKey = survey;
 
         if (cache != null) {
             Cache.ValueWrapper valueWrapper = cache != null ? cache.get(cacheKey) : null;
-            List<TripSuggestion> existingSuggestions = new ArrayList<>();
+            List<List<TripSuggestion>> existingSuggestions = new ArrayList<>();
             if (valueWrapper != null) {
-                existingSuggestions = (List<TripSuggestion>) valueWrapper.get();
+                existingSuggestions = (List<List<TripSuggestion>>) valueWrapper.get();
             }
-            List<TripSuggestion> mergedSuggestions = mergeSuggestions(existingSuggestions, newSuggestions);
+            List<List<TripSuggestion>> mergedSuggestions = mergeSuggestions(existingSuggestions, newSuggestions);
             cache.put(cacheKey, mergedSuggestions);
         }
     }
 
+    // Reset the cache every 30 minutes
     @Scheduled(fixedRate = 30 * 60 * 1000)
     public void evictObsoleteEntries() {
         Cache cache = cacheManager.getCache("tripSuggestion");
@@ -1473,17 +1506,15 @@ public class TripService {
         }
     }
 
-    private List<TripSuggestion> mergeSuggestions(List<TripSuggestion> existingSuggestions, List<TripSuggestion> newSuggestions) {
-        List<TripSuggestion> mergedSuggestions = new ArrayList<>();
+    private List<List<TripSuggestion>> mergeSuggestions(List<List<TripSuggestion>> existingSuggestions, List<TripSuggestion> newSuggestions) {
+        List<List<TripSuggestion>> mergedSuggestions = new ArrayList<>();
         if (existingSuggestions != null) {
-            for (TripSuggestion suggestion : existingSuggestions) {
-                mergedSuggestions.add(suggestion);
+            for (List<TripSuggestion> listSuggestion : existingSuggestions) {
+                mergedSuggestions.add(listSuggestion);
             }
         }
         if (newSuggestions != null) {
-            for (TripSuggestion suggestion : newSuggestions) {
-                mergedSuggestions.add(suggestion);
-            }
+                mergedSuggestions.add(newSuggestions);
         }
         return mergedSuggestions;
     }
@@ -1532,29 +1563,28 @@ public class TripService {
         return matchingCountries.isEmpty() ? null : matchingCountries;
     }
 
-// Filters cities based on specified criteria such as country, landscape, temperature, and climate.
-public List<City> filterCitiesByCriteria(Country countryDest, Landscape landscape, Temperature temperature, Climate climate) {
-    List<City> cityList;
-    if (landscape.equals(Landscape.ALL) && temperature.equals(Temperature.ALL) && climate.equals(Climate.ALL)) {
-        cityList = cityRepository.findAllByCountry(countryDest);
-    } else if (landscape.equals(Landscape.ALL) && temperature.equals(Temperature.ALL)) {
-        cityList = cityRepository.findAllByCountryAndClimate(countryDest, climate);
-    } else if (landscape.equals(Landscape.ALL) && climate.equals(Climate.ALL)) {
-        cityList = cityRepository.findAllByCountryAndTemperature(countryDest, temperature);
-    } else if (temperature.equals(Temperature.ALL) && climate.equals(Climate.ALL)) {
-        cityList = cityRepository.findAllByCountryAndLandscape(countryDest, landscape);
-    } else if (landscape.equals(Landscape.ALL)) {
-        cityList = cityRepository.findAllByCountryAndTemperatureAndClimate(countryDest, temperature, climate);
-    } else if (temperature.equals(Temperature.ALL)) {
-        cityList = cityRepository.findAllByCountryAndLandscapeAndClimate(countryDest, landscape, climate);
-    } else if (climate.equals(Climate.ALL)) {
-        cityList = cityRepository.findAllByCountryAndLandscapeAndTemperature(countryDest, landscape, temperature);
-    } else {
-        cityList = cityRepository.findAllByCountryAndLandscapeAndTemperatureAndClimate(countryDest, landscape, temperature, climate);
-    }
+    // Filters cities based on specified criteria such as country, landscape, temperature, and climate.
+    public List<City> filterCitiesByCriteria(Country countryDest, Landscape landscape, Temperature temperature, Climate climate) {
+        List<City> cityList;
+        if (landscape.equals(Landscape.ALL) && temperature.equals(Temperature.ALL) && climate.equals(Climate.ALL)) {
+            cityList = cityRepository.findAllByCountry(countryDest);
+        } else if (landscape.equals(Landscape.ALL) && temperature.equals(Temperature.ALL)) {
+            cityList = cityRepository.findAllByCountryAndClimate(countryDest, climate);
+        } else if (landscape.equals(Landscape.ALL) && climate.equals(Climate.ALL)) {
+            cityList = cityRepository.findAllByCountryAndTemperature(countryDest, temperature);
+        } else if (temperature.equals(Temperature.ALL) && climate.equals(Climate.ALL)) {
+            cityList = cityRepository.findAllByCountryAndLandscape(countryDest, landscape);
+        } else if (landscape.equals(Landscape.ALL)) {
+            cityList = cityRepository.findAllByCountryAndTemperatureAndClimate(countryDest, temperature, climate);
+        } else if (temperature.equals(Temperature.ALL)) {
+            cityList = cityRepository.findAllByCountryAndLandscapeAndClimate(countryDest, landscape, climate);
+        } else if (climate.equals(Climate.ALL)) {
+            cityList = cityRepository.findAllByCountryAndLandscapeAndTemperature(countryDest, landscape, temperature);
+        } else {
+            cityList = cityRepository.findAllByCountryAndLandscapeAndTemperatureAndClimate(countryDest, landscape, temperature, climate);
+        }
 
-    return cityList;
+        return cityList;
     }
 
 }
-

@@ -1,11 +1,10 @@
     package com.l3g1.apitraveller.model;
 
-    import java.util.Date;
     import java.util.List;
     import java.time.LocalDate;
+
     import lombok.Data;
     import lombok.AllArgsConstructor;
-    import lombok.Getter;
     import lombok.NoArgsConstructor;
     @Data
     @AllArgsConstructor

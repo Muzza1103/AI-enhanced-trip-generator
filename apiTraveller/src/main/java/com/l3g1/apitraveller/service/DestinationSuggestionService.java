@@ -1,7 +1,6 @@
 package com.l3g1.apitraveller.service;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -54,7 +53,9 @@ public class DestinationSuggestionService {
 	public List<Suggestion>getSuggestion(Survey survey) throws IllegalArgumentException{
 
 		// Extract survey parameters
-		if(!survey.getLocalisation().equals("ALL")) {
+		if(Continent.isValidValue(survey.getLocalisation().toUpperCase().replace(" ", "_"))){
+			survey.setLocalisation(survey.getLocalisation().toUpperCase().replace(" ", "_"));
+		}else if (!survey.getLocalisation().equals("ALL")) {
 			String localisation = survey.getLocalisation().toLowerCase().replace("_", " ");
 			// Capitalizes the first letter of the location
 			localisation = Character.toUpperCase(localisation.charAt(0)) + localisation.substring(1);
@@ -104,8 +105,8 @@ public class DestinationSuggestionService {
 
 			// Determine number of suggestions to generate based on available cities
 			random = new Random();
-			numberOfSuggestions = Math.min(countryList.size(), 3);
 			if (!countryList.isEmpty()) {
+				numberOfSuggestions = Math.min(countryList.size(), 3);
 				for (int i = 0; i < numberOfSuggestions; i++) {
 					// Select a random country in the list of country
 					randomIndex = random.nextInt(countryList.size());
@@ -156,9 +157,9 @@ public class DestinationSuggestionService {
 				// Filter cities in the specified country based on criteria
 				cityList = filterCitiesByCriteria(countryDest, landscape, temperature, climate);
 				// Determine number of suggestions to generate based on available cities
-				numberOfSuggestions = Math.min(cityList.size(), 3);
 				random = new Random();
 				if (!cityList.isEmpty()) {
+					numberOfSuggestions = Math.min(cityList.size(), 3);
 					for (int i = 0; i < numberOfSuggestions; i++) {
 						// Select a random city in the list of city
 						randomIndex = random.nextInt(cityList.size());
@@ -202,14 +203,21 @@ public class DestinationSuggestionService {
 	public List<Suggestion>getSuggestionAI (Survey survey) throws IllegalArgumentException{
 
 		// Extract survey parameters
-		String localisation = survey.getLocalisation().toLowerCase().replace("_", " ");
-		localisation = Character.toUpperCase(localisation.charAt(0)) + localisation.substring(1);
-		for (int i = 0; i < localisation.length(); i++) {
-			if (localisation.charAt(i) == ' ') {
-				localisation = localisation.substring(0, i + 1) + Character.toUpperCase(localisation.charAt(i + 1)) + localisation.substring(i + 2);
+		if(Continent.isValidValue(survey.getLocalisation().toUpperCase().replace(" ", "_"))){
+			survey.setLocalisation(survey.getLocalisation().toUpperCase().replace(" ", "_"));
+		}else if (!survey.getLocalisation().equals("ALL")) {
+			String localisation = survey.getLocalisation().toLowerCase().replace("_", " ");
+			// Capitalizes the first letter of the location
+			localisation = Character.toUpperCase(localisation.charAt(0)) + localisation.substring(1);
+			// Capitalizes the first letter after each space in the location
+			for (int i = 0; i < localisation.length(); i++) {
+				if (localisation.charAt(i) == ' ') {
+					localisation = localisation.substring(0, i + 1) + Character.toUpperCase(localisation.charAt(i + 1)) + localisation.substring(i + 2);
+				}
 			}
+			survey.setLocalisation(localisation);
 		}
-		survey.setLocalisation(localisation);
+		String localisation = survey.getLocalisation();
 		Climate climate = survey.getClimate();
 		Landscape landscape = survey.getLandscape();
 		Temperature temperature = survey.getTemperature();
@@ -221,7 +229,7 @@ public class DestinationSuggestionService {
 		List<Country> countryList = new ArrayList<>();
 		List<City> cityList;
 		int numberOfSuggestions;
-		Random random;
+		Random random = new Random();
 		int randomIndex;
 		int randomIndex2;
 		City cityDest;
@@ -232,6 +240,12 @@ public class DestinationSuggestionService {
 		int iterationCountryAI;
 		int iterationCityAI;
 		int iterationActivityAI;
+
+		List<List<Suggestion>> suggestionsFromCache = getSuggestionFromCache(survey);
+		if (suggestionsFromCache!=null&&!suggestionsFromCache.isEmpty()) {
+			List<Suggestion> randomSuggestionFromCache = suggestionsFromCache.get(random.nextInt(suggestionsFromCache.size()));
+			return randomSuggestionFromCache;
+		}
 
 		// Generate suggestions based on survey criteria
 		if (localisation.equals("ALL")||Continent.isValidValue(localisation.toUpperCase().replace(" ", "_"))) { // Manage the code for both cases as the code is almost the same for the two, only the initialisation of countryList change
@@ -258,7 +272,7 @@ public class DestinationSuggestionService {
 			objectMapper = new ObjectMapper();
 			iterationCountryAI = 0;
 			// Iterate until enough countries are added by the AI or maximum iterations reached
-			while (countryList.size() < 3 && iterationCountryAI < 10) {
+			while ((countryList == null || countryList.size() < numberOfSuggestions) && iterationCountryAI < 10) {
 				// Call the AI to add new countries based on the information on the survey
 
 				try {
@@ -300,9 +314,9 @@ public class DestinationSuggestionService {
 
 				iterationCityAI = 0;
 				// Iterate until enough cities are found or maximum iterations reached
-				while (cityList.size() < 3 && iterationCityAI < 10) {
+				while ((cityList == null || cityList.size() < 3) && iterationCityAI < 10) {
 					try {
-						Thread.sleep(15000);
+						Thread.sleep(10000);
 					} catch (InterruptedException e) {
 
 						e.printStackTrace();
@@ -332,7 +346,7 @@ public class DestinationSuggestionService {
 
 				iterationActivityAI = 0;
 				// Iterate until enough activities are found or maximum iterations reached
-				while (activityDest.size() < 3 && iterationActivityAI < 10) {
+				while ((activityDest == null || activityDest.size() < 3 ) && iterationActivityAI < 10) {
 					// Call the AI to add new activities based on the information on the survey
 					try {
 						Thread.sleep(10000);
@@ -420,9 +434,9 @@ public class DestinationSuggestionService {
 
 			iterationCityAI = 0;
 			// Iterate until enough cities are found or maximum iterations reached
-			while(cityList.size() < 3 && iterationCityAI < 10) {
+			while(( cityList == null || cityList.size() < 3 ) && iterationCityAI < 10) {
 				try {
-					Thread.sleep(2000);
+					Thread.sleep(10000);
 				} catch (InterruptedException e) {
 
 					e.printStackTrace();
@@ -454,7 +468,7 @@ public class DestinationSuggestionService {
 
 				iterationActivityAI = 0;
 				// Iterate until enough activities are found or maximum iterations reached
-				while (activityDest.size() < 3 && iterationActivityAI < 10) {
+				while (( activityDest == null || activityDest.size() < 3 ) && iterationActivityAI < 10) {
 					// Call the AI to add new activities based on the information on the survey
 					try {
 						jsonString = aiService.chatActivity(countryDest, cityDest, activityDest, survey);
@@ -502,6 +516,7 @@ public class DestinationSuggestionService {
 		}else{
 			throw new IllegalArgumentException("The localisation you have given in the survey is incorrect, please check the survey.");
 		}
+		putSuggestionInCache(survey, suggList);
 		// Return the list of suggestions
 		return suggList;
 
@@ -511,7 +526,9 @@ public class DestinationSuggestionService {
 	public List<Suggestion>getSuggestionAIWithCache(Survey survey) throws IllegalArgumentException{
 
 		// Extract survey parameters
-		if(!survey.getLocalisation().equals("ALL")) {
+		if(Continent.isValidValue(survey.getLocalisation().toUpperCase().replace(" ", "_"))){
+			survey.setLocalisation(survey.getLocalisation().toUpperCase().replace(" ", "_"));
+		}else if (!survey.getLocalisation().equals("ALL")) {
 			String localisation = survey.getLocalisation().toLowerCase().replace("_", " ");
 			// Capitalizes the first letter of the location
 			localisation = Character.toUpperCase(localisation.charAt(0)) + localisation.substring(1);
@@ -548,7 +565,7 @@ public class DestinationSuggestionService {
 		int iterationCityAI;
 		int iterationActivityAI;
 
-		List<Suggestion> suggestionsFromCache = getSuggestionAIWithCache(survey);
+		List<List<Suggestion>> suggestionsFromCache = getSuggestionFromCache(survey);
 
 		// Generate suggestions based on survey criteria
 		if (localisation.equals("ALL")||Continent.isValidValue(localisation.toUpperCase().replace(" ", "_"))) { // Manage the code for both cases as the code is almost the same for the two, only the initialisation of countryList change
@@ -573,10 +590,12 @@ public class DestinationSuggestionService {
 			numberOfSuggestions = 3;
 
 			if (suggestionsFromCache != null) {
-				for (Suggestion suggestion : suggestionsFromCache) {
-					Country country = suggestion.getCountry();
-					if (country != null && countryList.contains(country)) {
-						countryList.remove(country);
+				for (List<Suggestion> suggestionFromCache : suggestionsFromCache) {
+					for (Suggestion suggestion : suggestionFromCache) {
+						Country country = suggestion.getCountry();
+						if (country != null && countryList.contains(country)) {
+							countryList.remove(country);
+						}
 					}
 				}
 			}
@@ -613,10 +632,12 @@ public class DestinationSuggestionService {
 				}
 
 				if (suggestionsFromCache != null) {
-					for (Suggestion suggestion : suggestionsFromCache) {
-						Country country = suggestion.getCountry();
-						if (country != null && countryList.contains(country)) {
-							countryList.remove(country);
+					for (List<Suggestion> suggestionFromCache : suggestionsFromCache) {
+						for (Suggestion suggestion : suggestionFromCache) {
+							Country country = suggestion.getCountry();
+							if (country != null && countryList.contains(country)) {
+								countryList.remove(country);
+							}
 						}
 					}
 				}
@@ -755,10 +776,12 @@ public class DestinationSuggestionService {
 			cityList = filterCitiesByCriteria(countryDest, landscape, temperature, climate);
 
 			if (suggestionsFromCache != null) {
-				for (Suggestion suggestion : suggestionsFromCache) {
-					City city = suggestion.getCity();
-					if (city != null && cityList.contains(city)) {
-						cityList.remove(city);
+				for (List<Suggestion> suggestionFromCache : suggestionsFromCache) {
+					for (Suggestion suggestion : suggestionFromCache) {
+						Country country = suggestion.getCountry();
+						if (country != null && countryList.contains(country)) {
+							countryList.remove(country);
+						}
 					}
 				}
 			}
@@ -787,10 +810,12 @@ public class DestinationSuggestionService {
 				iterationCityAI++;
 
 				if (suggestionsFromCache != null) {
-					for (Suggestion suggestion : suggestionsFromCache) {
-						City city = suggestion.getCity();
-						if (city != null && cityList.contains(city)) {
-							cityList.remove(city);
+					for (List<Suggestion> suggestionFromCache : suggestionsFromCache) {
+						for (Suggestion suggestion : suggestionFromCache) {
+							Country country = suggestion.getCountry();
+							if (country != null && countryList.contains(country)) {
+								countryList.remove(country);
+							}
 						}
 					}
 				}
@@ -866,34 +891,37 @@ public class DestinationSuggestionService {
 
 	}
 
-	public List<Suggestion> getSuggestionFromCache(Survey survey) throws IllegalArgumentException {
+	//Return the list of suggestions for the specific survey if it is in the cache
+	public List<List<Suggestion>> getSuggestionFromCache(Survey survey) throws IllegalArgumentException {
 		Cache cache = cacheManager.getCache("destinationSuggestion");
 		Survey cacheKey = survey;
 		Cache.ValueWrapper valueWrapper = cache != null ? cache.get(cacheKey) : null;
 
 		if (valueWrapper != null) {
-			return (List<Suggestion>) valueWrapper.get();
+			return (List<List<Suggestion>>) valueWrapper.get();
 		}
 
 		return null;
 	}
 
+
+	//Put the list of suggestions for the specific survey in the cache
 	public void putSuggestionInCache(Survey survey, List<Suggestion> newSuggestions) throws IllegalArgumentException {
 		Cache cache = cacheManager.getCache("destinationSuggestion");
 		Survey cacheKey = survey;
 
 		if (cache != null) {
 			Cache.ValueWrapper valueWrapper = cache != null ? cache.get(cacheKey) : null;
-			List<Suggestion> existingSuggestions = new ArrayList<>();
+			List<List<Suggestion>> existingSuggestions = new ArrayList<>();
 			if (valueWrapper != null) {
-				existingSuggestions = (List<Suggestion>) valueWrapper.get();
+				existingSuggestions = (List<List<Suggestion>>) valueWrapper.get();
 			}
-			List<Suggestion> mergedSuggestions = mergeSuggestions(existingSuggestions, newSuggestions);
+			List<List<Suggestion>> mergedSuggestions = mergeSuggestions(existingSuggestions, newSuggestions);
 			cache.put(cacheKey, mergedSuggestions);
 		}
 	}
 
-
+	// Reset the cache every 30 minutes
 	@Scheduled(fixedRate = 30 * 60 * 1000)
 	public void evictObsoleteEntries() {
 		Cache cache = cacheManager.getCache("destinationSuggestion");
@@ -902,17 +930,15 @@ public class DestinationSuggestionService {
 		}
 	}
 
-	private List<Suggestion> mergeSuggestions(List<Suggestion> existingSuggestions, List<Suggestion> newSuggestions) {
-		List<Suggestion> mergedSuggestions = new ArrayList<>();
+	private List<List<Suggestion>> mergeSuggestions(List<List<Suggestion>> existingSuggestions, List<Suggestion> newSuggestions) {
+		List<List<Suggestion>> mergedSuggestions = new ArrayList<>();
 		if (existingSuggestions != null) {
-			for (Suggestion suggestion : existingSuggestions) {
+			for (List<Suggestion> suggestion : existingSuggestions) {
 				mergedSuggestions.add(suggestion);
 			}
 		}
 		if (newSuggestions != null) {
-			for (Suggestion suggestion : newSuggestions) {
-				mergedSuggestions.add(suggestion);
-			}
+			mergedSuggestions.add(newSuggestions);
 		}
 		return mergedSuggestions;
 	}

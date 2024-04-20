@@ -11,14 +11,14 @@ import org.springframework.context.annotation.Primary;
 @EnableCaching
 public class CacheConfig {
 
-    // Configuration du cache destinationSuggestion
+    // Configuration of the destinationSuggestion cache
     @Bean
     @Primary
     public CacheManager destinationCacheManager() {
         return new ConcurrentMapCacheManager("destinationSuggestion");
     }
 
-    // Configuration du cache tripSuggestion
+    // Configuration of the tripSuggestion cache
     @Bean
     public CacheManager tripCacheManager() {
         return new ConcurrentMapCacheManager("tripSuggestion");

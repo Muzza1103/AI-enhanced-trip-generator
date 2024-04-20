@@ -1,0 +1,257 @@
+import React, { useState } from 'react';
+import './Survey.css';
+import logo from './logo.png';
+import Select from 'react-select'
+import {Country} from 'country-state-city'
+
+// Données pour les filtres
+const ACTIVITY_TYPES = [
+    'OUTDOOR 🌳', 'CULTURAL 🏛️', 'RELAXATION 🧘🏽', 'ADVENTURE 🌄', 'GASTRONOMIC 🍽️', 'ENTERTAINMENT 🎭', 'ROMANTIC 💖', 'HISTORICAL 🏰', 'ALL', 'OTHER'
+];
+const CLIMATES = [
+    'TROPICAL 🌴', 'DESERT 🏜️', 'POLAR ❄️', 'MEDITERRANEAN 🏖️', 'TEMPERATE 🌤️', 'ALL', 'OTHER'
+];
+const LANDSCAPES = [
+    'MOUNTAIN ⛰️', 'BEACH 🏖️', 'FOREST 🌲', 'DESERT 🏜️', 'VALLEY 🏞️', 'COASTAL 🌊', 'RURAL 🏡', 'URBAN 🏙️', 'ALL', 'OTHER'
+];
+const TEMPERATURES = [
+    'HOT 🌞', 'WARM 🌼', 'MILD 🌿', 'TEMPERATE 🌤️', 'COOL 🌬️', 'COLD ❄️', 'ALL'
+];
+
+// Liste des continents
+const CONTINENTS = [
+    'Africa 🐘', 'Antarctica 🐧', 'Asia 🐼', 'Europe 🐎', 'North America 🦅', 'Oceania 🦘', 'South America 🦥'
+];
+
+const COUNTRIES = Country.getAllCountries().map(country => country.name.toUpperCase());
+const countryOptions = COUNTRIES.map(country => ({ value: country, label: country }));
+
+const Survey = () => {
+    const [showFilter1, setShowFilter1] = useState(false);
+    const [showFilter2, setShowFilter2] = useState(false);
+    const [selectedOptions1, setSelectedOptions1] = useState({
+        localisation: '',
+        activityType: [],
+        climate: '',
+        landscape: '',
+        temperature: ''
+    });
+
+    const [selectedOptions2, setSelectedOptions2] = useState({
+        localisation: '',
+        activityType: [],
+        climate: '',
+        landscape: '',
+        temperature: '',
+        startingDate: '',
+        endingDate: '',
+        budget: 0
+    });
+
+    // Fonctions pour gérer la sélection des options
+    const handleOptionSelect1 = (option, attribute) => {
+        setSelectedOptions1(prevState => {
+            const newState = { ...prevState };
+            if (option === 'ALL' && attribute !== 'localisation') {
+                const newOptions = attribute === 'activityType' ? ACTIVITY_TYPES.filter(item => item !== 'ALL') :
+                    attribute === 'climate' ? CLIMATES.filter(item => item !== 'ALL') :
+                        attribute === 'landscape' ? LANDSCAPES.filter(item => item !== 'ALL') :
+                            attribute === 'temperature' ? TEMPERATURES.filter(item => item !== 'ALL') :
+                                prevState[attribute];
+                return { ...prevState, [attribute]: newOptions };
+            } else if (option === 'ALL' && attribute === 'localisation') {
+                newState[attribute] = option;
+            } else if (attribute === 'localisation') {
+                newState[attribute] = option;
+            } else {
+                const index = newState[attribute].indexOf(option);
+                if (index !== -1) {
+                    newState[attribute] = newState[attribute].filter(item => item !== option);
+                } else {
+                    newState[attribute] = [...newState[attribute], option];
+                }
+            }
+            console.log("Valeurs à jours", newState);
+            return newState;
+        });
+    };
+
+    const handleOptionSelect2 = (option, attribute) => {
+        setSelectedOptions2(prevState => {
+            const newState = { ...prevState };
+            if (option === 'ALL' && attribute !== 'localisation') {
+                const newOptions = attribute === 'activityType' ? ACTIVITY_TYPES.filter(item => item !== 'ALL') :
+                    attribute === 'climate' ? CLIMATES.filter(item => item !== 'ALL') :
+                        attribute === 'landscape' ? LANDSCAPES.filter(item => item !== 'ALL') :
+                            attribute === 'temperature' ? TEMPERATURES.filter(item => item !== 'ALL') :
+                                prevState[attribute];
+                return { ...prevState, [attribute]: newOptions };
+            } else if (option === 'ALL' && attribute === 'localisation') {
+                newState[attribute] = option;
+            } else if (attribute === 'budget' || attribute === 'localisation') {
+                newState[attribute] = option;
+            } else {
+                const index = newState[attribute].indexOf(option);
+                if (index !== -1) {
+                    newState[attribute] = newState[attribute].filter(item => item !== option);
+                } else {
+                    newState[attribute] = [...newState[attribute], option];
+                }
+            }
+            console.log("Valeurs à jours", newState);
+            return newState;
+        });
+    };
+
+
+    // Fonction pour les boutons d'options
+    const renderButtonOptions = (options, selectedOptions, attribute, handleOptionSelect) => (
+        <div>
+            <label><h2>{attribute}</h2></label>
+            {options.map(option => (
+                <button
+                    key={option}
+                    className={`option-button${selectedOptions && selectedOptions[attribute]?.includes(option) ? ' active' : ''}`}
+                    onClick={() => {
+                        handleOptionSelect(option, attribute);
+                    }}
+                >
+                    {option}
+                </button>
+            ))}
+        </div>
+    );
+
+    // Fonction pour gérer la soumission du formulaire
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        // Handle form submission logic
+    };
+
+    return (
+        <div>
+            <div className="background-container"></div>
+            <div className="survey-container">
+                <img src={logo} alt="Logo" className="survey-logo" />
+                <div className="filter-buttons">
+                    <button className={`survey-button ${showFilter1 ? 'active' : ''}`} onClick={() => {
+                        setShowFilter1(!showFilter1);
+                        setShowFilter2(false);
+                    }}>Survey
+                    </button>
+                    <button className={`survey-button ${showFilter2 ? 'active' : ''}`} onClick={() => {
+                        setShowFilter2(!showFilter2);
+                        setShowFilter1(false);
+                    }}>Trip Survey
+                    </button>
+                </div>
+                <div className="filter-container">
+                    {showFilter1 && (
+                        <div>
+                            <h2>Localisation</h2>
+                            <select
+                                value={selectedOptions1.localisation.toString()}
+                                onChange={(e) => handleOptionSelect1(e.target.value, 'localisation')}
+                            >
+                                <option value="ALL">All</option>
+                                <option value="CONTINENT">Continent</option>
+                                <option value="COUNTRY">Country</option>
+                            </select>
+                            {selectedOptions1.localisation === 'CONTINENT' && renderButtonOptions(CONTINENTS, selectedOptions1, 'localisation', handleOptionSelect1)}
+                            {CONTINENTS.includes(selectedOptions1.localisation) && renderButtonOptions(CONTINENTS, selectedOptions1, 'localisation', handleOptionSelect1)}
+                            {selectedOptions1.localisation === 'COUNTRY' && (
+                                <Select
+                                    options={countryOptions}
+                                    value={countryOptions.find(option => option.value === selectedOptions1.localisation)}
+                                    onChange={(selectedOption) => handleOptionSelect1(selectedOption.value, 'localisation')}
+                                />
+
+                            )}
+                            {COUNTRIES.includes(selectedOptions1.localisation) && (
+                                <Select
+                                    options={countryOptions}
+                                    value={countryOptions.find(option => option.value === selectedOptions1.localisation)}
+                                    onChange={(selectedOption) => handleOptionSelect1(selectedOption.value, 'localisation')}
+                                />
+
+                            )}
+                            {renderButtonOptions(CONTINENTS, selectedOptions1, 'localisation', handleOptionSelect1)}
+                            {renderButtonOptions(ACTIVITY_TYPES, selectedOptions1, 'activityType', handleOptionSelect1)}
+                            {renderButtonOptions(CLIMATES, selectedOptions1, 'climate', handleOptionSelect1)}
+                            {renderButtonOptions(LANDSCAPES, selectedOptions1, 'landscape', handleOptionSelect1)}
+                            {renderButtonOptions(TEMPERATURES, selectedOptions1, 'temperature', handleOptionSelect1)}
+                        </div>
+                    )}
+                    {showFilter2 && (
+                        <div>
+                            <h2>Localisation</h2>
+                            <select
+                                value={selectedOptions2.localisation.toString()}
+                                onChange={(e) => handleOptionSelect2(e.target.value, 'localisation')}
+                            >
+                                <option value="ALL">All</option>
+                                <option value="CONTINENT">Continent</option>
+                                <option value="COUNTRY">Country</option>
+                            </select>
+                            {selectedOptions2.localisation === 'CONTINENT' && renderButtonOptions(CONTINENTS, selectedOptions2, 'localisation', handleOptionSelect2)}
+                            {CONTINENTS.includes(selectedOptions2.localisation) && renderButtonOptions(CONTINENTS, selectedOptions2, 'localisation', handleOptionSelect2)}
+                            {selectedOptions2.localisation === 'COUNTRY' && (
+                                <Select
+                                    options={countryOptions}
+                                    value={countryOptions.find(option => option.value === selectedOptions2.localisation)}
+                                    onChange={(selectedOption) => handleOptionSelect2(selectedOption.value, 'localisation')}
+                                />
+
+                            )}
+                            {COUNTRIES.includes(selectedOptions2.localisation) && (
+                                <Select
+                                    options={countryOptions}
+                                    value={countryOptions.find(option => option.value === selectedOptions2.localisation)}
+                                    onChange={(selectedOption) => handleOptionSelect2(selectedOption.value, 'localisation')}
+                                />
+
+                            )}
+                            {renderButtonOptions(ACTIVITY_TYPES, selectedOptions2, 'activityType', handleOptionSelect2)}
+                            {renderButtonOptions(CLIMATES, selectedOptions2, 'climate', handleOptionSelect2)}
+                            {renderButtonOptions(LANDSCAPES, selectedOptions2, 'landscape', handleOptionSelect2)}
+                            {renderButtonOptions(TEMPERATURES, selectedOptions2, 'temperature', handleOptionSelect2)}
+                            <div>
+                                <h2>Start of the journey</h2>
+                                <input
+                                    className="date-custom"
+                                    type="date"
+                                    value={selectedOptions2.startingDate || ''}
+                                    onChange={(e) => handleOptionSelect2(e.target.value, 'startingDate')}
+                                />
+                                <div>
+                                    <h2>End of the journey</h2>
+                                    <input
+                                        className="date-custom"
+                                        type="date"
+                                        value={selectedOptions2.endingDate || ''}
+                                        onChange={(e) => handleOptionSelect2(e.target.value, 'endingDate')}
+                                    />
+                                </div>
+                                <h2>Budget</h2>
+                                <input
+                                    className="budget-bar"
+                                    type="text"
+                                    value={selectedOptions2.budget || ''}
+                                    onChange={(e) => handleOptionSelect2(e.target.value, 'budget')}
+                                />
+                            </div>
+                        </div>
+                    )}
+                </div>
+                <div className="submit-form">
+                    <h2>Survey Form</h2>
+                    <form onSubmit={handleSubmit}>
+                        <button type="submit">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Survey;

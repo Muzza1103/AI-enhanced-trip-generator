@@ -1,0 +1,190 @@
+.background-container {
+    position: relative; /* Assure que les éléments à l'intérieur sont positionnés relativement à celui-ci */
+    width: 100%;
+    height: 100vh;
+    background-image: url('../../public/SeptMerveilles/TajMahal.jpg');
+    background-size: cover;
+    background-position: center;
+}
+
+.result-container{
+    position: fixed; /* Utilisez "fixed" pour maintenir le conteneur en place même lors du défilement */
+    top: 0;
+    right :0;
+    width: 35%;
+    height: 100vh; /* Utilisez 100vh pour prendre toute la hauteur de la fenêtre du navigateur */
+    background-color: rgba(27, 69, 57, 0.5);
+    padding: 20px;
+    box-sizing: border-box; /* Pour inclure le padding dans la largeur/hauteur */
+    overflow-y: auto; /* Ajoute une barre de défilement si le contenu dépasse la hauteur */
+}
+.result-container::-webkit-scrollbar {
+    width: 10px; /* Largeur de la barre de défilement */
+}
+.result-container::-webkit-scrollbar-thumb {
+    background-color: #d3cfa9; /* Couleur du "pouce" */
+    border-radius: 4px; /* Coins arrondis */
+}
+.survey-container {
+    position: fixed; /* Utilisez "fixed" pour maintenir le conteneur en place même lors du défilement */
+    top: 0;
+    left: 0;
+    width: 35%;
+    height: 100vh; /* Utilisez 100vh pour prendre toute la hauteur de la fenêtre du navigateur */
+    background-color: rgba(27, 69, 57, 0.5);
+    padding: 20px;
+    box-sizing: border-box; /* Pour inclure le padding dans la largeur/hauteur */
+    overflow-y: auto; /* Ajoute une barre de défilement si le contenu dépasse la hauteur */
+}
+/* Pour le conteneur de la barre de défilement */
+.survey-container::-webkit-scrollbar {
+    width: 10px; /* Largeur de la barre de défilement */
+}
+
+/* Pour le "pouce" de défilement */
+.survey-container::-webkit-scrollbar-thumb {
+    background-color: #d3cfa9; /* Couleur du "pouce" */
+    border-radius: 4px; /* Coins arrondis */
+}
+
+/* Pour la piste de défilement */
+.survey-container::-webkit-scrollbar-track {
+    background-color: rgba(27, 69, 57, 0.7); /* Couleur de la piste de défilement */
+}
+
+.survey-container img {
+    border-radius: 70%;
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+}
+/* Styles pour les boutons "Survey" */
+.survey-button {
+    background-color: #d3cfa9; /* Couleur de fond par défaut */
+    border: 2px solid #1b4539;
+    border-radius: 5px; /* Coins arrondis */
+    color: #1b4539; /* Couleur du texte */
+    padding: 10px 20px; /* Espacement intérieur */
+    margin-right: 10px; /* Marge à droite */
+    cursor: pointer;
+    transition: background-color 0.3s; /* Transition pour l'animation */
+}
+
+/* Styles pour les boutons "Survey" actifs */
+.survey-button.active {
+    background-color: #1b4539; /* Couleur de fond lorsque le bouton est actif */
+    color: #d3cfa9;
+    border: 2px solid #d3cfa9;
+}
+
+/* Styles pour les boutons "Survey" au survol */
+.survey-button:hover {
+    background-color: #156634; /* Couleur de fond au survol */
+}
+
+/* Styles pour les boutons des options */
+.option-button {
+    background-color: #d3cfa9;
+    border: 2px solid #1b4539; /* Bordure solide */
+    border-radius: 10px;
+    color: #1b4539; /* Couleur du texte */
+    padding: 10px 20px;
+    margin-right: 10px; /* Marge à droite pour l'espace entre les boutons */
+    margin-bottom: 10px; /* Marge en bas pour l'espace entre les lignes */
+    cursor: pointer;
+    transition: background-color 0.3s; /* Transition pour l'animation */
+}
+
+/* Styles pour les boutons survolés */
+.option-button:hover {
+    background-color: #1b4539; /* Couleur de fond au survol */
+    color: #d3cfa9; /* Changement de couleur du texte */
+}
+
+/* Styles pour les boutons actifs (sélectionnés) */
+.option-button.active {
+    background-color: #1b4539; /* Changer la couleur de fond */
+    color: #d3cfa9; /* Laisser la couleur du texte blanche */
+    border: 2px solid #d3cfa9;
+}
+
+.filter-container {
+    margin-top: 20px;
+}
+
+.filter-buttons {
+    margin-bottom: 20px;
+}
+
+.join-item {
+    margin-right: 5px;
+}
+
+.localisation-choice{
+    background-color: #f0f0f0;
+    color: #333;
+    border-color: #333333;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 10px;
+    font-family: "Roboto Light", sans-serif;
+    border-style: solid;
+}
+.localisation-choice:focus {
+    outline: none; /* Supprime la bordure de mise au point */
+    border-color: #1b4539;
+    box-shadow: 0 0 5px rgba(27, 69, 57, 0.5);
+}
+.budget-bar{
+    background-color: #f0f0f0;
+    color: #333;
+    border-color: #333333;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 10px;
+    font-family: "Roboto Light", sans-serif;
+    border-style: solid;
+}
+.budget-bar:focus {
+    outline: none; /* Supprime la bordure de mise au point */
+    border-color: #1b4539;
+    box-shadow: 0 0 5px rgba(27, 69, 57, 0.5);
+}
+
+.date-custom{
+    background-color: #f0f0f0;
+    color: #333;
+    border-color: #333333;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+    border-style: solid;
+}
+
+.date-custom:focus {
+    outline: none;
+    border-color: #1b4539;
+    box-shadow: 0 0 5px rgba(27, 69, 57, 0.5);
+}
+
+.road-trip-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.road-trip-buttons button {
+    border-radius: 9px;
+    padding: 10px 20px;
+    background-color: #d3cfa9;
+    color: #1b4539;
+    cursor: pointer;
+    box-shadow: none;
+    border: 2px solid #1b4539;
+}
+
+.road-trip-buttons button.active {
+    background-color: #1b4539;
+    color: #d3cfa9;
+    border: 2px solid #d3cfa9;
+}

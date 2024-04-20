@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from './logo.png';
-import './HomePage.css';
+import './HomePage.css'; // Importez le fichier CSS
 
 const HomePage = () => {
     const navigate = useNavigate();
@@ -11,29 +11,14 @@ const HomePage = () => {
         navigate('/survey');
     };
 
-    const modifyButton = () => {
-        const button = buttonRef.current;
-
-        button.style.backgroundColor = "#d3cfa9";
-        button.style.color = "white";
-
-        button.style.width = "190px";
-        button.style.height = "50px";
-
-        button.style.color = "black";
-        button.style.fontWeight = "bold";
-        button.style.fontSize = "15px";
-    };
-
-    // Call modifyButton function when the component is rendered
-    useEffect(() => {
-        modifyButton();
-    }, []);
 
     return (
         <div className="homepage-container">
             <img src={logo} alt="Logo" />
-            <button ref={buttonRef} id="Let's-go-to-the-survey-button" onClick={handleButtonClick}>Let's go to the survey !</button>
+            <h1> Where journeys begin</h1>
+            <button
+                ref={buttonRef} className="HomeToSurveyButton" onClick={handleButtonClick}>Let's go to the survey !
+            </button>
         </div>
     );
 };
