@@ -379,7 +379,7 @@ public class TripService {
                     countryDest = countryList.get(randomIndex);
                 }else{
                     // Add suggested countries to the list and retry if the list is empty
-                    while (countryList.size() < 3 && iterationCountryAI<10) {
+                    while ((countryList == null || countryList.size() < 3 ) && iterationCountryAI<10) {
                         try {
                             objectMapper = new ObjectMapper();
                             jsonString = aiService.chatTripCountry(survey);
@@ -447,7 +447,7 @@ public class TripService {
                 // Verify if the user want a suggestion for a travel through multiple cities or not
                 if (!roadTrip) {
                     // Retry until enough cities are found or a maximum iteration count is reached
-                    while(cityList.size() < 3 && iterationCityAI < 10) {
+                    while((cityList == null || cityList.size() < 3 ) && iterationCityAI < 10) {
                         try {
                             Thread.sleep(10000);
                         } catch (InterruptedException e) {
@@ -496,7 +496,7 @@ public class TripService {
                     }
 
                     // Retry until enough activities are found or a maximum iteration count is reached
-                    while (activityDest.size() < timeTrip*activitiesPerDay && iterationActivityAI < 10) {
+                    while (( activityDest == null || activityDest.size() < timeTrip*activitiesPerDay) && iterationActivityAI < 10) {
                         // Call the AI to add new activities based on the information on the survey
                         try {
                             Thread.sleep(10000); // Wait for a certain period before retrying to avoid sending to many request to the AI
@@ -533,7 +533,7 @@ public class TripService {
                         List<Activity> activities;
                         // A loop that assigns one activity per day based on the duration of the trip.
                         for (int day = 0; day < timeTrip; day++) {
-                            dayActivityBuilder.append("\n Day ").append(day + 1).append(" : \n\n");
+                            dayActivityBuilder.append("\n Day-").append(day + 1).append(" : \n\n");
                             for (int activityIndex = 0; activityIndex < activitiesPerDay; activityIndex++) {
                                 Activity dailyActivity = null;
                                 if(!activityDest.isEmpty()) {
@@ -591,7 +591,6 @@ public class TripService {
                                             }
                                         }
                                         // Update the remaining budget
-                                        costValue = budget - cost;
                                         activities = new ArrayList<>(activityDest);
                                         while (!activities.isEmpty() && dailyActivity==null) {
                                             int randomIdx = random.nextInt(activities.size());
@@ -639,7 +638,7 @@ public class TripService {
 
                     iterationCityAI = 0;
                     // Iterate until enough cities are found or the maximum iteration count is reached
-                    while(iterationCityAI < 10 && cityList.size() < numberOfCitiesInRoadTrip) {
+                    while(iterationCityAI < 10 && (cityList == null || cityList.size() < numberOfCitiesInRoadTrip)) {
                         try {
                             Thread.sleep(10000); // Wait for a certain period before retrying to avoid sending to many request to the AI
                         } catch (InterruptedException e) {
@@ -688,7 +687,7 @@ public class TripService {
                                 upperLimit = budget/numberOfCitiesInRoadTrip;
                             }
                             // Retry until enough activities are found or the maximum iteration count is reached
-                            while (activityDest.size() < numberOfDaysPerCity*activitiesPerDay && iterationActivityAI < 10) {
+                            while ((activityDest == null || activityDest.size() < numberOfDaysPerCity*activitiesPerDay) && iterationActivityAI < 10) {
                                 // Call the AI to add new activities based on the information on the survey
                                 try {
                                     Thread.sleep(10000); // Wait for a certain period before retrying to avoid sending to many request to the AI
@@ -731,7 +730,7 @@ public class TripService {
                                 }
                                 // A loop that assigns one activity per day based on the duration of the trip.
                                 for (int j = 0; j<numberOfDaysPerCity; j++) {
-                                    dayActivityBuilder.append("\n Day ").append(day + 1 ).append(" : \n\n");
+                                    dayActivityBuilder.append("\n Day-").append(day + 1 ).append(" : \n\n");
                                     for (int activityIndex = 0; activityIndex < activitiesPerDay; activityIndex++) {
                                         Activity dailyActivity = null;
 
@@ -790,7 +789,6 @@ public class TripService {
                                                 }
                                             }
                                             // Update price limits and retry activity selection
-                                            costValue = budget/numberOfCitiesInRoadTrip - costCity;
                                             activities = new ArrayList<>(activityDest);
                                             while (!activities.isEmpty() && dailyActivity==null) {
                                                 int randomIdx = random.nextInt(activities.size());
@@ -935,14 +933,14 @@ public class TripService {
                     }
                 }
 
-                if(!countryList.isEmpty()) {
+                if(countryList!=null && !countryList.isEmpty()) {
                     // Select a random country in the list of country
                     randomIndex = random.nextInt(countryList.size());
                     countryDest = countryList.get(randomIndex);
                 }
 
                 // Add suggested countries to the list and retry if the list is empty
-                while (countryList.isEmpty() && iterationCountryAI<10) {
+                while ((countryList == null || countryList.isEmpty() ) && iterationCountryAI<10) {
                     try {
                         objectMapper = new ObjectMapper();
                         jsonString = aiService.chatTripCountry(survey);
@@ -1033,7 +1031,7 @@ public class TripService {
                 // Verify if the user want a suggestion for travel through multiple cities or not
                 if (!roadTrip) {
                     // Retry until enough cities are found or a maximum iteration count is reached
-                    while(cityList.isEmpty() && iterationCityAI < 10) {
+                    while(( cityList == null || cityList.isEmpty()) && iterationCityAI < 10) {
                         try {
                             Thread.sleep(10000);
                         } catch (InterruptedException e) {
@@ -1093,7 +1091,7 @@ public class TripService {
                     }
 
                     // Retry until enough activities are found or a maximum iteration count is reached
-                    while (activityDest.size() < timeTrip*activitiesPerDay && iterationActivityAI < 10) {
+                    while (( activityDest == null || activityDest.size() < timeTrip*activitiesPerDay )&& iterationActivityAI < 10) {
                         // Call the AI to add new activities based on the information on the survey
                         try {
                             Thread.sleep(10000); // Wait for a certain period before retrying to avoid sending to many request to the AI
@@ -1246,7 +1244,7 @@ public class TripService {
 
                     iterationCityAI = 0;
                     // Iterate until enough cities are found or the maximum iteration count is reached
-                    while(iterationCityAI < 10 && cityList.size() < numberOfCitiesInRoadTrip) {
+                    while(iterationCityAI < 10 && ( cityList == null || cityList.size() < numberOfCitiesInRoadTrip)) {
                         try {
                             Thread.sleep(10000); // Wait for a certain period before retrying to avoid sending to many request to the AI
                         } catch (InterruptedException e) {
@@ -1306,7 +1304,7 @@ public class TripService {
                                 upperLimit = budget/numberOfCitiesInRoadTrip;
                             }
                             // Retry until enough activities are found or the maximum iteration count is reached
-                            while (activityDest.size() < numberOfDaysPerCity*activitiesPerDay && iterationActivityAI < 10) {
+                            while ((activityDest == null || activityDest.size() < numberOfDaysPerCity*activitiesPerDay ) && iterationActivityAI < 10) {
                                 // Call the AI to add new activities based on the information on the survey
                                 try {
                                     Thread.sleep(10000); // Wait for a certain period before retrying to avoid sending to many request to the AI
@@ -1349,7 +1347,7 @@ public class TripService {
                                 }
                                 // A loop that assigns one activity per day based on the duration of the trip.
                                 for (int j = 0; j<numberOfDaysPerCity; j++) {
-                                    dayActivityBuilder.append("\n Day ").append(day + 1 ).append(" : \n\n");
+                                    dayActivityBuilder.append("\n Day-").append(day + 1 ).append(" : \n\n");
                                     for (int activityIndex = 0; activityIndex < activitiesPerDay; activityIndex++) {
                                         Activity dailyActivity = null;
 
@@ -1408,7 +1406,6 @@ public class TripService {
                                                 }
                                             }
                                             // Update price limits and retry activity selection
-                                            costValue = budget/numberOfCitiesInRoadTrip - costCity;
                                             activities = new ArrayList<>(activityDest);
                                             while (!activities.isEmpty() && dailyActivity==null) {
                                                 int randomIdx = random.nextInt(activities.size());

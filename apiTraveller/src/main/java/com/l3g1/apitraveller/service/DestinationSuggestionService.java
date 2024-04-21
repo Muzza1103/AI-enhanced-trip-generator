@@ -603,7 +603,7 @@ public class DestinationSuggestionService {
 			objectMapper = new ObjectMapper();
 			iterationCountryAI = 0;
 			// Iterate until enough countries are added by the AI or maximum iterations reached
-			while (countryList.size() < 3 && iterationCountryAI < 10) {
+			while ((countryList == null || countryList.size() < 3) && iterationCountryAI < 10) {
 				// Call the AI to add new countries based on the information on the survey
 
 				try {
@@ -656,9 +656,9 @@ public class DestinationSuggestionService {
 
 				iterationCityAI = 0;
 				// Iterate until enough cities are found or maximum iterations reached
-				while (cityList.size() < 3 && iterationCityAI < 10) {
+				while ((cityList == null || cityList.size() < 3) && iterationCityAI < 10) {
 					try {
-						Thread.sleep(15000);
+						Thread.sleep(10000);
 					} catch (InterruptedException e) {
 
 						e.printStackTrace();
@@ -688,7 +688,7 @@ public class DestinationSuggestionService {
 
 				iterationActivityAI = 0;
 				// Iterate until enough activities are found or maximum iterations reached
-				while (activityDest.size() < 3 && iterationActivityAI < 10) {
+				while (( activityDest == null || activityDest.size() < 3) && iterationActivityAI < 10) {
 					// Call the AI to add new activities based on the information on the survey
 					try {
 						Thread.sleep(10000);
@@ -788,7 +788,7 @@ public class DestinationSuggestionService {
 
 			iterationCityAI = 0;
 			// Iterate until enough cities are found or maximum iterations reached
-			while(cityList.size() < 3 && iterationCityAI < 10) {
+			while((cityList == null || cityList.size() < 3 ) && iterationCityAI < 10) {
 				try {
 					Thread.sleep(2000);
 				} catch (InterruptedException e) {
@@ -835,7 +835,7 @@ public class DestinationSuggestionService {
 
 				iterationActivityAI = 0;
 				// Iterate until enough activities are found or maximum iterations reached
-				while (activityDest.size() < 3 && iterationActivityAI < 10) {
+				while (( activityDest == null || activityDest.size() < 3 )  && iterationActivityAI < 10) {
 					// Call the AI to add new activities based on the information on the survey
 					try {
 						jsonString = aiService.chatActivity(countryDest, cityDest, activityDest, survey);

@@ -104,7 +104,7 @@ public class TripSuggestionController {
                     cityNode.put("Total Cost of Activities for this city", suggestion.getCostCity());
                 }
                 ArrayNode daysArray = objectMapper.createArrayNode();
-                String[] days = suggestion.getDayActivity().split("Day");
+                String[] days = suggestion.getDayActivity().split("Day-");
                 for (int i = 1; i < days.length; i++) { // Start from 1 to skip the empty string before the first "Day"
                     String day = days[i].trim();
                     if (!day.isEmpty()) {
@@ -192,7 +192,7 @@ public class TripSuggestionController {
                     cityNode.put("Total Cost of Activities for this city", suggestion.getCostCity());
                 }
                 ArrayNode daysArray = objectMapper.createArrayNode();
-                String[] days = suggestion.getDayActivity().split("Day");
+                String[] days = suggestion.getDayActivity().split("Day-");
                 for (int i = 1; i < days.length; i++) { // Start from 1 to skip the empty string before the first "Day"
                     String day = days[i].trim();
                     if (!day.isEmpty()) {
