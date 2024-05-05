@@ -1,0 +1,42 @@
+# Configuration for the server
+server:
+  port: 9000 # Port where the API will be hosted
+
+# Spring Boot configuration
+spring:
+  # Database configuration
+  datasource:
+    url: ${jdbc.url} # JDBC URL for database connection
+    username: ${jdbc.username} # Database username
+    password: ${jdbc.password} # Database password
+
+  main:
+    allow-bean-definition-overriding: true # Allow overriding bean definitions
+
+  jpa:
+    # Hibernate configuration
+    hibernate:
+      ddl-auto: update # Database schema generation strategy
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect # Hibernate dialect for MySQL 8
+    show-sql: true # Show SQL queries in console
+
+  # Cache configuration
+  cache:
+    cache-names:
+      - destinationSuggestion
+      - tripSuggestion # Cache names for destination and trip suggestions
+
+# Custom application configuration
+ApiTraveller:
+  app:
+    jwtSecret: PasswordUserL3G1 # JWT secret key, can be a random value, not as important as the server generating the token and token verifying server is the same here
+    jwtExpirationMs: 86400000 # JWT token expiration time in milliseconds
+
+# OpenAI API configuration
+openai:
+  api:
+    key: ${API_AI_KEY} # API key for OpenAI
+    url: https://api.openai.com/v1/chat/completions # URL for OpenAI API endpoint
+    model: gpt-3.5-turbo-0125 # OpenAI model version
