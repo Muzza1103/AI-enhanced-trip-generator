@@ -11,7 +11,7 @@
 
 <h2>Installation</h2>
 <ol>
-    <li>Clonez ce dépôt sur votre machine locale.</li>
+    <li>Clonez le dépôt sur votre machine locale.</li>
     <li>Assurez-vous d'avoir Java et Node.js installés sur votre système.</li>
     <li>Téléchargez le fichier api-0.0.1-SNAPSHOT.jar ainsi que le dossier apiTravellerFront depuis le dépôt et placez-les dans le même répertoire.</li>
     <li>Avant de lancer le programme, assurez-vous que les ports 3000 et 9000 de votre ordinateur sont disponibles, car les serveurs seront hébergés sur ces derniers.</li>
